@@ -27,7 +27,9 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                // Latin stays Figtree; Lao glyphs (absent in Figtree) fall through
+                // to the self-hosted Phetsarath OT before the system stack.
+                sans: ['Figtree', 'Phetsarath OT', ...defaultTheme.fontFamily.sans],
             },
         },
     },

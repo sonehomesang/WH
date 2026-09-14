@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Phetsarath OT — Lao national font (self-hosted, DGC ເພັດຊະລາດ webfont).
+   Figtree ບໍ່ມີ glyph ພາສາລາວ, ຈຶ່ງໃຫ້ Lao ຕົກລົງມາໃຊ້ Phetsarath ຜ່ານ font stack
+   (Figtree, ..., 'Phetsarath OT') — ໂຕອັກສອນລາຕິນ ຍັງເປັນ Figtree ຄືເກົ່າ. */
+@font-face {
+    font-family: 'Phetsarath OT';
+    src: url('/fonts/phetsarath/phetsarath_ot.woff2') format('woff2'),
+         url('/fonts/phetsarath/phetsarath_ot.woff') format('woff');
+    font-weight: 400 700; /* single physical weight — synthesised bold */
+    font-style: normal;
+    font-display: swap;
+}
+
 /* Alpine x-cloak — ເຊື່ອງ element ຈົນກວ່າ Alpine init (ກັນ column flash). */
 [x-cloak] {
     display: none !important;

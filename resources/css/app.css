@@ -14,6 +14,17 @@
     font-display: swap;
 }
 
+/* ─── WH list-table type scale (2026-09-14 ມາດຕະຖານ ຂະໜາດ ຟ້ອນ) ───
+   ໃສ່ຜ່ານ class `wh-list` ໃນ <table> ຫຼັກ ຂອງ ແຕ່ລະ ໜ້າ ລາຍການ.
+   - ຫົວ ຄໍລັມ (th): 15px / 700
+   - ຕົວ ຫຼັກ (td): 14/700, ດຳ (ສືບທອດ ສີ ລິ້ງ ຄື indigo/sky ໄວ້)
+   - ຕົວ ຮອງ (.text-xs, ຍົກເວັ້ນ pill): 14/400 ສີ slate ນຸ້ມ — ແຍກ ຈາກ ຕົວ ຫຼັກ ດ້ວຍ ນ້ຳໜັກ+ສີ (ບໍ່ ລາຍຕາ)
+   - status pill (.rounded-full): ພຽງ ຂະຫຍາຍ ເປັນ 14px, ຮັກສາ ສີ ສະຖານະ ໄວ້ */
+.wh-list thead th { font-size: 15px; font-weight: 700; }
+.wh-list tbody td { font-weight: 700; }
+.wh-list tbody .text-xs:not(.rounded-full) { font-size: 14px; font-weight: 400; color: #5b7089; }
+.wh-list tbody .rounded-full.text-xs { font-size: 14px; }
+
 /* Alpine x-cloak — ເຊື່ອງ element ຈົນກວ່າ Alpine init (ກັນ column flash). */
 [x-cloak] {
     display: none !important;

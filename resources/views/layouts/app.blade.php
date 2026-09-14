@@ -139,10 +139,10 @@
                                 @if ($moduleIcon)
                                     <span class="w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm grid place-items-center text-xl shrink-0">{{ $moduleIcon }}</span>
                                 @endif
-                                <h1 class="text-2xl font-semibold text-gray-800 truncate shrink-0">{{ $pageTitle }}</h1>
+                                <h1 class="text-[26px] font-bold text-gray-800 truncate shrink-0 leading-tight">{{ $pageTitle }}</h1>
                                 @if ($pageSubtitle)
                                     <span class="text-gray-300 hidden lg:inline">·</span>
-                                    <span class="text-sm text-gray-400 truncate hidden lg:inline">{{ $pageSubtitle }}</span>
+                                    <span class="text-sm text-gray-500 truncate hidden lg:inline">{{ $pageSubtitle }}</span>
                                 @endif
                             </div>
                             <div class="flex items-center gap-1">

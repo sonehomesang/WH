@@ -60,7 +60,7 @@
 
             {{-- Desktop table --}}
             <div class="hidden md:block bg-white border border-gray-100 rounded-lg overflow-x-auto">
-                <table class="w-full text-sm table-fixed">
+                <table class="wh-list w-full text-sm table-fixed">
                     <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
                         <tr class="text-xs font-semibold uppercase tracking-wide">
                             <th class="text-left font-semibold px-3 py-2 w-28">ລະຫັດເຄື່ອງ</th>

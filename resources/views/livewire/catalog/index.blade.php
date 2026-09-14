@@ -51,7 +51,7 @@
 
         {{-- Desktop table --}}
         <div class="hidden md:block bg-white border border-gray-100 rounded-lg overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="wh-list w-full text-sm">
                 <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
                     <tr class="text-xs font-semibold uppercase tracking-wide">
                         <th class="text-left font-semibold px-4 py-2">ລະຫັດ <span class="text-gray-400">(Material No.)</span></th>

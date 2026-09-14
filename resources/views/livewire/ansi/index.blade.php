@@ -41,7 +41,7 @@
 
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm table-fixed">
+                <table class="wh-list w-full text-sm table-fixed">
                     <colgroup><col style="width:12%"><col style="width:16%"><col style="width:31%"><col style="width:8%"><col style="width:14%"><col style="width:19%"></colgroup>
                     <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
                         <tr class="text-xs font-semibold uppercase tracking-wide text-left">

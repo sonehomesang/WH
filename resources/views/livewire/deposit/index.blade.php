@@ -68,7 +68,7 @@
         {{-- Desktop table --}}
         <div class="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm table-fixed">
+                <table class="wh-list w-full text-sm table-fixed">
                     <colgroup>
                         <col style="width:8%"><col style="width:13%"><col style="width:21%"><col style="width:6%">
                         <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:14%">

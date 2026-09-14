@@ -17,6 +17,8 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public int $perPage = 8;               // rows per page (whitelisted in render) — no inner scroll
+
     public bool $showDeleted = false;
 
     public function mount(): void
@@ -30,6 +32,11 @@ class Index extends Component
     }
 
     public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
     {
         $this->resetPage();
     }
@@ -90,28 +97,30 @@ class Index extends Component
                 ->orWhere('supplier_name', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->orderByDesc('id')
-            ->paginate(9);
+            ->paginate(in_array($this->perPage, [8, 10, 25, 50, 100], true) ? $this->perPage : 8);
+
+        $counts = $this->scopedQuery()->selectRaw('status, count(*) c')->groupBy('status')->pluck('c', 'status');
+        $chip = fn ($k, $l, $c, $a = false) => ['key' => $k, 'label' => $l, 'count' => $c, 'alert' => $a];
 
         return view('livewire.da.index', [
             'records' => $items,
             'canManageDeleted' => $this->canManageDeleted(),
-            'chips' => $this->statusChips(),
+            'chips' => [
+                $chip('', 'ທັງໝົດ', $counts->sum()),
+                $chip('submitted', 'submitted', $counts['submitted'] ?? 0, true),
+                $chip('purchasing_review', 'purchasing', $counts['purchasing_review'] ?? 0, true),
+                $chip('pending_approval', 'ລໍ approve', $counts['pending_approval'] ?? 0, true),
+                $chip('resolved', 'resolved', $counts['resolved'] ?? 0),
+                $chip('draft', 'draft', $counts['draft'] ?? 0),
+                $chip('cancelled', 'ຍົກເລີກ', $counts['cancelled'] ?? 0),
+            ],
+            'kpi' => [
+                ['label' => '🧾 DA ທັງໝົດ', 'value' => $counts->sum(), 'hint' => 'records'],
+                ['label' => '⏳ submitted', 'value' => $counts['submitted'] ?? 0, 'hint' => 'submitted', 'tone' => 'text-amber-600'],
+                ['label' => '🔍 purchasing', 'value' => $counts['purchasing_review'] ?? 0, 'hint' => 'review', 'tone' => 'text-amber-600'],
+                ['label' => '✍️ ລໍ approve', 'value' => $counts['pending_approval'] ?? 0, 'hint' => 'pending', 'tone' => 'text-amber-600'],
+                ['label' => '✅ resolved', 'value' => $counts['resolved'] ?? 0, 'hint' => 'resolved'],
+            ],
         ]);
-    }
-
-    protected function statusChips(): array
-    {
-        $counts = $this->scopedQuery()->selectRaw('status, count(*) c')->groupBy('status')->pluck('c', 'status');
-        $chip = fn ($k, $l, $c, $a = false) => ['key' => $k, 'label' => $l, 'count' => $c, 'alert' => $a];
-
-        return [
-            $chip('', 'ທັງໝົດ', $counts->sum()),
-            $chip('submitted', 'submitted', $counts['submitted'] ?? 0, true),
-            $chip('purchasing_review', 'purchasing', $counts['purchasing_review'] ?? 0, true),
-            $chip('pending_approval', 'ລໍ approve', $counts['pending_approval'] ?? 0, true),
-            $chip('resolved', 'resolved', $counts['resolved'] ?? 0),
-            $chip('draft', 'draft', $counts['draft'] ?? 0),
-            $chip('cancelled', 'ຍົກເລີກ', $counts['cancelled'] ?? 0),
-        ];
     }
 }

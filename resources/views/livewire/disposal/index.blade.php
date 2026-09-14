@@ -15,23 +15,24 @@
 
 <div class="pb-6">
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+        {{-- live KPIs (page identity is already in the app top bar — no duplicate title) --}}
+        @include('partials._kpi-band', ['tiles' => $kpi])
+
         <div class="sticky top-16 z-30 bg-gray-100/95 backdrop-blur">
-            <div class="flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="w-11 h-11 rounded-xl bg-gradient-to-br from-rose-400 to-red-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">🗑️</span>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800">ຈຳໜ່າຍ ເຄື່ອງ <span class="text-gray-400 text-sm font-normal">· Disposal</span></h2>
-                        <p class="text-sm text-gray-400">{{ number_format($records->total()) }} ໃບ</p>
-                    </div>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <div class="relative">
+            <div class="flex flex-col gap-2 py-3 sm:py-2 sm:min-h-[52px] sm:flex-row sm:items-center sm:gap-3">
+                <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:flex-1 sm:min-w-0">
+                    <div class="relative w-full sm:flex-1 sm:min-w-[9rem] sm:max-w-md">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔎</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="ຄົ້ນຫາ DS/ຫົວຂໍ້/ຜູ້ເຮັດ…" class="w-52 pl-8 rounded-lg border-gray-300 text-sm" />
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="ຄົ້ນຫາ DS/ຫົວຂໍ້/ຜູ້ເຮັດ…" class="w-full pl-8 rounded-lg border-gray-300 text-sm" />
                     </div>
-                    <select wire:model.live="statusFilter" class="w-36 rounded-lg border-gray-300 text-sm">
+                    <select wire:model.live="statusFilter" class="shrink-0 w-36 rounded-lg border-gray-300 text-sm">
                         <option value="">ທຸກ ສະຖານະ</option>
                         @foreach ($statusLabels as $k => $lbl)<option value="{{ $k }}">{{ $lbl }}</option>@endforeach
+                    </select>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <select wire:model.live="perPage" class="shrink-0 rounded-lg border-gray-300 text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
+                        @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} ແຖວ</option>@endforeach
                     </select>
                     <a href="{{ route('disposal.summary') }}" wire:navigate class="text-sm text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-2 min-h-[40px] inline-flex items-center hover:bg-gray-50 transition whitespace-nowrap">📊 ລິສ ລວມ</a>
                     @if ($canManageDeleted)<button wire:click="toggleDeleted" title="ເບິ່ງ ໃບ ຈຳໜ່າຍ ທີ່ ລຶບ ແລ້ວ ເພື່ອ ກູ້ຄືນ" class="text-sm rounded-lg px-3 py-2 min-h-[40px] border transition whitespace-nowrap {{ $showDeleted ? 'bg-rose-600 text-white border-rose-600' : 'text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100' }}">{{ $showDeleted ? '← ກັບ ລິສ' : '↩ ລາຍການ ທີ່ ຖືກ ລຶບ' }}</button>@endif
@@ -40,35 +41,35 @@
             </div>
         </div>
 
-        @if (session('ok'))<div class="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 mb-3">{{ session('ok') }}</div>@endif
+        @if (session('ok'))<div class="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-1.5 mb-3">{{ session('ok') }}</div>@endif
 
         <div class="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-hidden overflow-y-auto max-h-[calc(100vh-14rem)]">
+            <div class="overflow-x-auto">
                 <table class="w-full text-sm table-fixed">
                     <colgroup>
                         <col style="width:7%"><col style="width:18%"><col style="width:12%"><col style="width:9%"><col style="width:9%">
                         <col style="width:8%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:13%">
                     </colgroup>
-                    <thead class="sticky top-0 z-10 bg-slate-50 text-slate-500 border-b border-gray-200">
-                        <tr class="text-[11px] uppercase tracking-wide">
-                            <th class="text-left font-semibold px-3 py-2.5">ໄອດີ (DS)</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ເຄື່ອງ (Items)</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ເຈົ້າຂອງ (Org/Dept)</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ທະບຽນຊັບສິນ</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ລະຫັດຂອງສາງ</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ຈຳນວນ</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ຜູ້ ເຮັດລິສ</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ວັນທີ</th>
-                            <th class="text-left font-semibold px-3 py-2.5">ສະຖານະ</th>
-                            <th class="text-right font-semibold px-3 py-2.5">ຈັດການ</th>
+                    <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+                        <tr class="text-xs font-semibold uppercase tracking-wide">
+                            <th class="text-left font-semibold px-3 py-1.5">ໄອດີ (DS)</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ເຄື່ອງ (Items)</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ເຈົ້າຂອງ (Org/Dept)</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ທະບຽນຊັບສິນ</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ລະຫັດຂອງສາງ</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ຈຳນວນ</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ຜູ້ ເຮັດລິສ</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ວັນທີ</th>
+                            <th class="text-left font-semibold px-3 py-1.5">ສະຖານະ</th>
+                            <th class="text-right font-semibold px-3 py-1.5">ຈັດການ</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($records as $r)
                             @php $dimmed = in_array($r->status, ['approved', 'disposed'], true); @endphp
                             <tr wire:key="ds-{{ $r->id }}" class="transition {{ $dimmed ? 'opacity-60 bg-gray-50/70' : 'hover:bg-sky-50/40' }}" @if ($dimmed) title="{{ $r->status === 'disposed' ? 'ຈຳໜ່າຍ ແລ້ວ' : 'ອະນຸມັດ ແລ້ວ' }}" @endif>
-                                <td class="px-3 py-2.5 align-top whitespace-nowrap"><a href="{{ route('disposal.show', $r) }}" wire:navigate class="font-mono font-medium text-indigo-600 hover:underline">{{ $r->request_number }}</a></td>
-                                <td class="px-3 py-2.5 align-top">
+                                <td class="px-3 py-1.5 align-top whitespace-nowrap"><a href="{{ route('disposal.show', $r) }}" wire:navigate class="font-mono font-medium text-indigo-600 hover:underline">{{ $r->request_number }}</a></td>
+                                <td class="px-3 py-1.5 align-top">
                                     @php $fi = $r->items->first(); $ph = $fi->photos[0] ?? null; @endphp
                                     <div class="flex gap-2.5">
                                         @if ($ph)<img src="{{ \Illuminate\Support\Facades\Storage::url($ph) }}" alt="" @click.stop.prevent="$dispatch('open-lightbox', { src: $el.src })" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shrink-0 cursor-zoom-in hover:ring-2 hover:ring-sky-300 transition" />
@@ -82,17 +83,17 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2.5 align-top text-xs">
+                                <td class="px-3 py-1.5 align-top text-xs">
                                     @if ($r->department)<div class="text-gray-700 font-medium">{{ $r->department->unit?->name ?? '—' }}</div><div class="text-gray-400">{{ $r->department->name }}</div>
                                     @else<span class="text-gray-300">—</span>@endif
                                 </td>
-                                <td class="px-3 py-2.5 align-top text-xs font-mono break-words {{ $fi?->fixed_asset_no ? 'text-gray-600' : 'text-gray-300' }}">{{ $fi?->fixed_asset_no ?: '—' }}@if ($fi?->fixed_asset_no && $r->items_count > 1)<span class="text-gray-300"> …</span>@endif</td>
-                                <td class="px-3 py-2.5 align-top text-xs">@if ($fi?->asset_code)<span class="font-mono bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 text-gray-600">{{ $fi->asset_code }}</span>@if ($r->items_count > 1)<span class="text-gray-300"> …</span>@endif @else<span class="text-gray-300">—</span>@endif</td>
-                                <td class="px-3 py-2.5 align-top whitespace-nowrap text-gray-700"><span class="font-semibold tabular-nums">{{ $r->items->sum('qty') }}</span> <span class="text-xs text-gray-400">({{ $r->items_count }} ລາຍການ)</span></td>
-                                <td class="px-3 py-2.5 align-top text-gray-600 text-xs break-words">{{ $r->prepared_by_name ?? '—' }}</td>
-                                <td class="px-3 py-2.5 align-top whitespace-nowrap text-gray-500 text-xs tabular-nums">{{ $r->created_at?->format('d/m/Y') }}</td>
-                                <td class="px-3 py-2.5 align-top whitespace-nowrap"><span class="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 {{ $badge($r->status) }}">{{ $statusLabels[$r->status] ?? $r->status }}</span></td>
-                                <td class="px-3 py-2.5 align-top text-right">
+                                <td class="px-3 py-1.5 align-top text-xs font-mono break-words {{ $fi?->fixed_asset_no ? 'text-gray-600' : 'text-gray-300' }}">{{ $fi?->fixed_asset_no ?: '—' }}@if ($fi?->fixed_asset_no && $r->items_count > 1)<span class="text-gray-300"> …</span>@endif</td>
+                                <td class="px-3 py-1.5 align-top text-xs">@if ($fi?->asset_code)<span class="font-mono bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 text-gray-600">{{ $fi->asset_code }}</span>@if ($r->items_count > 1)<span class="text-gray-300"> …</span>@endif @else<span class="text-gray-300">—</span>@endif</td>
+                                <td class="px-3 py-1.5 align-top whitespace-nowrap text-gray-700"><span class="font-semibold tabular-nums">{{ $r->items->sum('qty') }}</span> <span class="text-xs text-gray-400">({{ $r->items_count }} ລາຍການ)</span></td>
+                                <td class="px-3 py-1.5 align-top text-gray-600 text-xs break-words">{{ $r->prepared_by_name ?? '—' }}</td>
+                                <td class="px-3 py-1.5 align-top whitespace-nowrap text-gray-500 text-xs tabular-nums">{{ $r->created_at?->format('d/m/Y') }}</td>
+                                <td class="px-3 py-1.5 align-top whitespace-nowrap"><span class="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 {{ $badge($r->status) }}">{{ $statusLabels[$r->status] ?? $r->status }}</span></td>
+                                <td class="px-3 py-1.5 align-top text-right">
                                     <div class="flex flex-wrap gap-1 justify-end">
                                     @if ($showDeleted)
                                         <button wire:click="restore({{ $r->id }})" class="text-xs font-medium text-emerald-700 border border-emerald-200 rounded-lg px-3 py-1.5 hover:bg-emerald-50 transition">↩ ກູ້ຄືນ</button>

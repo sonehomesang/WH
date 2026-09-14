@@ -17,6 +17,8 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public int $perPage = 8;               // rows per page (whitelisted in render) — no inner scroll
+
     public bool $showDeleted = false;
 
     public function mount(): void
@@ -30,6 +32,11 @@ class Index extends Component
     }
 
     public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
     {
         $this->resetPage();
     }
@@ -91,27 +98,29 @@ class Index extends Component
                 ->orWhere('source_da_number', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->orderByDesc('id')
-            ->paginate(9);
+            ->paginate(in_array($this->perPage, [8, 10, 25, 50, 100], true) ? $this->perPage : 8);
+
+        $counts = $this->scopedQuery()->selectRaw('status, count(*) c')->groupBy('status')->pluck('c', 'status');
+        $chip = fn ($k, $l, $c, $a = false) => ['key' => $k, 'label' => $l, 'count' => $c, 'alert' => $a];
 
         return view('livewire.oga.index', [
             'records' => $items,
             'canManageDeleted' => $this->canManageDeleted(),
-            'chips' => $this->statusChips(),
+            'chips' => [
+                $chip('', 'ທັງໝົດ', $counts->sum()),
+                $chip('dispatched', 'ກຳລັງສົ່ງ', $counts['dispatched'] ?? 0, true),
+                $chip('delivered', 'ສົ່ງເຖິງ', $counts['delivered'] ?? 0),
+                $chip('returned', 'ສົ່ງກັບ', $counts['returned'] ?? 0),
+                $chip('draft', 'draft', $counts['draft'] ?? 0),
+                $chip('cancelled', 'ຍົກເລີກ', $counts['cancelled'] ?? 0),
+            ],
+            'kpi' => [
+                ['label' => '📤 OGA ທັງໝົດ', 'value' => $counts->sum(), 'hint' => 'records'],
+                ['label' => '🚚 ກຳລັງ ສົ່ງ', 'value' => $counts['dispatched'] ?? 0, 'hint' => 'dispatched', 'tone' => 'text-amber-600'],
+                ['label' => '📬 ສົ່ງ ເຖິງ', 'value' => $counts['delivered'] ?? 0, 'hint' => 'delivered'],
+                ['label' => '↩️ ສົ່ງ ກັບ', 'value' => $counts['returned'] ?? 0, 'hint' => 'returned'],
+                ['label' => '📝 draft', 'value' => $counts['draft'] ?? 0, 'hint' => 'draft'],
+            ],
         ]);
-    }
-
-    protected function statusChips(): array
-    {
-        $counts = $this->scopedQuery()->selectRaw('status, count(*) c')->groupBy('status')->pluck('c', 'status');
-        $chip = fn ($k, $l, $c, $a = false) => ['key' => $k, 'label' => $l, 'count' => $c, 'alert' => $a];
-
-        return [
-            $chip('', 'ທັງໝົດ', $counts->sum()),
-            $chip('dispatched', 'ກຳລັງສົ່ງ', $counts['dispatched'] ?? 0, true),
-            $chip('delivered', 'ສົ່ງເຖິງ', $counts['delivered'] ?? 0),
-            $chip('returned', 'ສົ່ງກັບ', $counts['returned'] ?? 0),
-            $chip('draft', 'draft', $counts['draft'] ?? 0),
-            $chip('cancelled', 'ຍົກເລີກ', $counts['cancelled'] ?? 0),
-        ];
     }
 }

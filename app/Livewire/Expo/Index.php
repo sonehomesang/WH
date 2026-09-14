@@ -17,6 +17,8 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public int $perPage = 8;               // rows per page (whitelisted in render) — no inner scroll
+
     public bool $showDeleted = false;
 
     public function mount(): void
@@ -30,6 +32,11 @@ class Index extends Component
     }
 
     public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
     {
         $this->resetPage();
     }
@@ -78,10 +85,11 @@ class Index extends Component
                 ->orWhere('city', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->orderByDesc('start_date')->orderByDesc('id')
-            ->paginate(9);
+            ->paginate(in_array($this->perPage, [8, 10, 25, 50, 100], true) ? $this->perPage : 8);
 
         $counts = ExpoEvent::selectRaw('status, count(*) c')->groupBy('status')->pluck('c', 'status');
         $chip = fn ($k, $l, $c) => ['key' => $k, 'label' => $l, 'count' => $c, 'alert' => false];
+        $today = today();
 
         return view('livewire.expo.index', [
             'records' => $items,
@@ -90,6 +98,13 @@ class Index extends Component
                 $chip('', 'ທັງໝົດ', $counts->sum()),
                 $chip('finalized', 'finalized', $counts['finalized'] ?? 0),
                 $chip('draft', 'draft', $counts['draft'] ?? 0),
+            ],
+            'kpi' => [
+                ['label' => '🎪 Expo ທັງໝົດ', 'value' => $counts->sum(), 'hint' => 'events'],
+                ['label' => '📅 ກຳລັງ ຈະ ໄປ', 'value' => ExpoEvent::whereDate('start_date', '>=', $today)->count(), 'hint' => 'upcoming', 'tone' => 'text-amber-600'],
+                ['label' => '📆 ໄປ ແລ້ວ', 'value' => ExpoEvent::whereDate('start_date', '<', $today)->count(), 'hint' => 'past'],
+                ['label' => '✅ finalized', 'value' => $counts['finalized'] ?? 0, 'hint' => 'finalized'],
+                ['label' => '📝 draft', 'value' => $counts['draft'] ?? 0, 'hint' => 'draft'],
             ],
         ]);
     }

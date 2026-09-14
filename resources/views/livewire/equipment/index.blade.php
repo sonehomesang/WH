@@ -23,6 +23,8 @@
 
         {{-- ═══ TAB 1: Register ═══ --}}
         <div x-show="tab==='register'">
+            {{-- live KPIs (page identity is already in the app top bar) --}}
+            <div class="pt-3">@include('partials._kpi-band', ['tiles' => $kpi])</div>
             {{-- toolbar (frozen ໃຕ້ ແທັບ) --}}
             <div class="sticky top-[6.5rem] z-20 bg-gray-100 flex flex-wrap items-center gap-2 py-2">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="ຄົ້ນຫາ ຊື່/ລະຫັດ/serial…"
@@ -43,6 +45,9 @@
                 </select>
                 <div class="flex-1"></div>
                 <span class="text-xs text-gray-400">ທັງໝົດ {{ $items->total() }} ລາຍການ</span>
+                <select wire:model.live="perPage" class="shrink-0 rounded-md border-gray-300 shadow-sm text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
+                    @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} ແຖວ</option>@endforeach
+                </select>
                 @if ($canManageDeleted)
                     <button wire:click="toggleDeleted" class="text-sm border rounded-md px-3 py-2 min-h-[40px] whitespace-nowrap {{ $showDeleted ? 'bg-gray-700 text-white border-gray-700' : 'text-gray-600 border-gray-300 hover:bg-gray-50' }}">
                         {{ $showDeleted ? '← ລາຍການ ປົກກະຕິ' : '🗑 ບັນທຶກ ການ ລຶບ' }}
@@ -54,10 +59,10 @@
             </div>
 
             {{-- Desktop table --}}
-            <div class="hidden md:block bg-white border border-gray-100 rounded-lg overflow-x-hidden overflow-y-auto max-h-[calc(100vh-16rem)]">
+            <div class="hidden md:block bg-white border border-gray-100 rounded-lg overflow-x-auto">
                 <table class="w-full text-sm table-fixed">
-                    <thead class="sticky top-0 z-10 bg-gray-50 text-gray-600 text-xs border-b border-gray-200 shadow-sm">
-                        <tr>
+                    <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+                        <tr class="text-xs font-semibold uppercase tracking-wide">
                             <th class="text-left font-semibold px-3 py-2 w-28">ລະຫັດເຄື່ອງ</th>
                             <th class="text-left font-semibold px-3 py-2 w-28">ທະບຽນຊັບສິນ</th>
                             <th class="text-left font-semibold px-3 py-2">ຊື່ ເຄື່ອງ / ລາຍລະອຽດ</th>

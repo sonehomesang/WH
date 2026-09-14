@@ -20,6 +20,8 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public int $perPage = 8;               // rows per page (whitelisted in render) — no inner scroll
+
     public function mount(): void
     {
         abort_unless(auth()->user()->can('ansi.view'), 403);
@@ -31,6 +33,11 @@ class Index extends Component
     }
 
     public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
     {
         $this->resetPage();
     }
@@ -84,12 +91,21 @@ class Index extends Component
                 ->orWhere('summary_items', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->orderByDesc('id')
-            ->paginate(8);
+            ->paginate(in_array($this->perPage, [8, 10, 25, 50, 100], true) ? $this->perPage : 8);
+
+        $counts = $this->scopedQuery()->selectRaw('status, count(*) c')->groupBy('status')->pluck('c', 'status');
 
         return view('livewire.ansi.index', [
             'records' => $records,
             'statusLabels' => AnsiApplication::STATUS_LABELS,
             'canManageDeleted' => $this->canManageDeleted(),
+            'kpi' => [
+                ['label' => '🆕 ANSI ທັງໝົດ', 'value' => $counts->sum(), 'hint' => 'records'],
+                ['label' => '⏳ ລໍ HoS', 'value' => $counts['pending_hos'] ?? 0, 'hint' => 'pending HoS', 'tone' => 'text-amber-600'],
+                ['label' => '⏳ ລໍ Manager', 'value' => $counts['pending_manager'] ?? 0, 'hint' => 'pending mgr', 'tone' => 'text-amber-600'],
+                ['label' => '📦 ລໍ Warehouse', 'value' => $counts['pending_warehouse'] ?? 0, 'hint' => 'pending WH', 'tone' => 'text-amber-600'],
+                ['label' => '✅ completed', 'value' => $counts['completed'] ?? 0, 'hint' => 'completed'],
+            ],
         ]);
     }
 }

@@ -10,7 +10,9 @@ use App\Models\EquipmentPhoto;
 use App\Models\InspectionTemplate;
 use App\Models\Uom;
 use App\Models\User;
+use App\Support\ConditionStatus;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -37,6 +39,8 @@ class Index extends Component
 
     /** filter ຕາມ owner/ພະແນກ (department_id). */
     public string $departmentFilter = '';
+
+    public int $perPage = 8;               // rows per page (whitelisted in render) — no inner scroll
 
     // Modal + form (register)
     public bool $showModal = false;
@@ -269,7 +273,7 @@ class Index extends Component
             'unit_id' => ['nullable', 'exists:uoms,id'],
             'qtyRepair' => ['integer', 'min:0'],
             'qtyRetired' => ['integer', 'min:0'],
-            'condition_status' => ['required', \App\Support\ConditionStatus::rule()],
+            'condition_status' => ['required', ConditionStatus::rule()],
             'purchase_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'newPhotos' => ['array', 'max:'.self::MAX_PHOTOS],
@@ -890,7 +894,7 @@ class Index extends Component
                 imagejpeg($img, null, 85);
                 $bytes = ob_get_clean();
                 imagedestroy($img);
-                $path = rtrim($dir, '/').'/ins_'.\Illuminate\Support\Str::random(32).'.jpg';
+                $path = rtrim($dir, '/').'/ins_'.Str::random(32).'.jpg';
                 Storage::disk('public')->put($path, $bytes);
 
                 return $path;
@@ -928,6 +932,11 @@ class Index extends Component
         $this->resetValidation();
     }
 
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
+
     public function render(): View
     {
         // department_admin ເຫັນ ສະເພາະ ເຄື່ອງ ຂອງ ພະແນກ ຕົນ.
@@ -948,7 +957,17 @@ class Index extends Component
             // ກັ່ນຕອງ ສະຖານະ: ມີ ≥1 ໜ່ວຍ ໃນ ສະຖານະ ນັ້ນ
             ->when($this->statusFilter, fn ($q) => $q->where('status_counts->'.$this->statusFilter, '>', 0))
             ->when($showingDeleted, fn ($q) => $q->orderByDesc('deleted_at'), fn ($q) => $q->orderBy('asset_code'))
-            ->paginate(8);
+            ->paginate(in_array($this->perPage, [8, 10, 25, 50, 100], true) ? $this->perPage : 8);
+
+        // KPI band (equipment register, dept-scoped like the list)
+        $kpiBase = Equipment::query()->when($deptScoped, fn ($q) => $q->where('department_id', $deptId));
+        $kpi = [
+            ['label' => '🛠️ ເຄື່ອງ ທັງໝົດ', 'value' => (clone $kpiBase)->count(), 'hint' => 'equipment'],
+            ['label' => '🔧 ຕ້ອງ ສ້ອມ', 'value' => (clone $kpiBase)->where('status_counts->repair', '>', 0)->count(), 'hint' => 'in repair', 'tone' => 'text-amber-600'],
+            ['label' => '⛔ ปลด ระวาง', 'value' => (clone $kpiBase)->where('status_counts->retired', '>', 0)->count(), 'hint' => 'retired'],
+            ['label' => '🔄 ກຳລັງ ຢືມ', 'value' => (clone $kpiBase)->whereHas('activeBorrowItems')->count(), 'hint' => 'on loan', 'tone' => 'text-amber-600'],
+            ['label' => '📁 ປະເພດ', 'value' => EquipmentCategory::where('is_active', true)->count(), 'hint' => 'categories'],
+        ];
 
         $insResults = $this->showInspectionModal && strlen($this->insSearch) >= 2
             ? Equipment::where(fn ($q) => $q->where('name', 'like', "%{$this->insSearch}%")
@@ -1008,6 +1027,7 @@ class Index extends Component
 
         return view('livewire.equipment.index', [
             'items' => $items,
+            'kpi' => $kpi,
             'insTemplateOptions' => $insTemplateOptions,
             'units' => Uom::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'departments' => Department::where('is_active', true)->orderBy('name')->get(['id', 'name']),

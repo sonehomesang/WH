@@ -1,0 +1,19 @@
+<?php
+
+use App\Livewire\Da\Index;
+use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
+use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->seed(RolePermissionSeeder::class);
+    $this->actingAs(User::factory()->create(['is_super_admin' => true]));
+});
+
+test('da index shows the KPI band and clamps a non-whitelisted perPage', function () {
+    Livewire::test(Index::class)
+        ->assertOk()
+        ->assertSee('DA ທັງໝົດ')
+        ->set('perPage', 999)
+        ->assertViewHas('records', fn ($p) => $p->perPage() === 8);
+});

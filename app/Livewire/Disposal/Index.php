@@ -20,6 +20,8 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public int $perPage = 8;               // rows per page (whitelisted in render) — no inner scroll
+
     public function mount(): void
     {
         abort_unless(auth()->user()->can('disposal.view'), 403);
@@ -31,6 +33,11 @@ class Index extends Component
     }
 
     public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
     {
         $this->resetPage();
     }
@@ -98,12 +105,24 @@ class Index extends Component
                 ->orWhere('prepared_by_name', 'like', "%{$this->search}%")))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($showingDeleted, fn ($q) => $q->orderByDesc('deleted_at'), fn ($q) => $q->orderByDesc('created_at'))
-            ->paginate(5);
+            ->paginate(in_array($this->perPage, [8, 10, 25, 50, 100], true) ? $this->perPage : 8);
+
+        $counts = DisposalRecord::query()->where(fn ($q) => $this->scopeFor($q))
+            ->selectRaw('status, count(*) c')->groupBy('status')->pluck('c', 'status');
+        $pending = ($counts['in_review'] ?? 0) + ($counts['committee_review'] ?? 0) + ($counts['technical_review'] ?? 0)
+            + ($counts['manager_review'] ?? 0) + ($counts['executive_review'] ?? 0);
 
         return view('livewire.disposal.index', [
             'records' => $records,
             'statusLabels' => DisposalRecord::STATUS_LABELS,
             'canManageDeleted' => $this->canManageDeleted(),
+            'kpi' => [
+                ['label' => '🗑️ ໃບ ຈຳໜ່າຍ ທັງໝົດ', 'value' => $counts->sum(), 'hint' => 'records'],
+                ['label' => '⏳ ກຳລັງ ຮັບຮອງ', 'value' => $pending, 'hint' => 'in review', 'tone' => 'text-amber-600'],
+                ['label' => '✅ ອະນຸມັດ ແລ້ວ', 'value' => $counts['approved'] ?? 0, 'hint' => 'approved'],
+                ['label' => '♻️ ຈຳໜ່າຍ ແລ້ວ', 'value' => $counts['disposed'] ?? 0, 'hint' => 'disposed'],
+                ['label' => '📝 draft', 'value' => $counts['draft'] ?? 0, 'hint' => 'draft'],
+            ],
         ]);
     }
 }

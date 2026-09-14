@@ -8,7 +8,9 @@ use App\Models\AreaInspectionTemplate;
 use App\Models\Location;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -23,6 +25,13 @@ class Index extends Component
     use SoftDeletesWithReason;
     use WithFileUploads;
     use WithPagination;
+
+    public int $perPage = 8;               // rows per page (whitelisted in render) — no inner scroll
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
 
     // ── record modal ──
     public bool $showForm = false;
@@ -189,23 +198,23 @@ class Index extends Component
 
         $hasNc = collect($items)->contains(fn ($x) => $x['status'] === 'NC');
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($label, $items, $overview, $hasNc) {
+        DB::transaction(function () use ($label, $items, $overview, $hasNc) {
             AreaInspection::create([
                 'inspection_number' => $this->nextNumber(),
-            'template_id' => $this->fTemplateId,
-            'location_id' => $this->fLocationId,
-            'location_label' => $label,
-            'inspected_on' => $this->fDate,
-            'inspected_time' => $this->fTime ?: null,
-            'frequency' => $this->fFrequency,
-            'inspectors' => array_values(array_filter(array_map('trim', $this->fInspectors))),
-            'checklist' => $items,
-            'overview_photos' => $overview,
-            'result' => $hasNc ? 'has_nc' : 'compliant',
-            'next_due_date' => $this->computeNextDue($this->fDate, $this->fFrequency),
-            'notes' => $this->fNotes ?: null,
-            'created_by' => auth()->id(),
-            'updated_by' => auth()->id(),
+                'template_id' => $this->fTemplateId,
+                'location_id' => $this->fLocationId,
+                'location_label' => $label,
+                'inspected_on' => $this->fDate,
+                'inspected_time' => $this->fTime ?: null,
+                'frequency' => $this->fFrequency,
+                'inspectors' => array_values(array_filter(array_map('trim', $this->fInspectors))),
+                'checklist' => $items,
+                'overview_photos' => $overview,
+                'result' => $hasNc ? 'has_nc' : 'compliant',
+                'next_due_date' => $this->computeNextDue($this->fDate, $this->fFrequency),
+                'notes' => $this->fNotes ?: null,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
             ]);
         });
 
@@ -240,7 +249,7 @@ class Index extends Component
                 imagejpeg($img, null, 85);
                 $bytes = ob_get_clean();
                 imagedestroy($img);
-                $path = rtrim($dir, '/').'/ai_'.\Illuminate\Support\Str::random(32).'.jpg';
+                $path = rtrim($dir, '/').'/ai_'.Str::random(32).'.jpg';
                 Storage::disk('public')->put($path, $bytes);
 
                 return $path;
@@ -388,13 +397,23 @@ class Index extends Component
             $q->onlyTrashed()->with('deletedBy');
         }
 
+        $total = AreaInspection::count();
+        $hasNc = AreaInspection::where('result', 'has_nc')->count();
+
         return view('livewire.area-inspection.index', [
-            'rows' => $q->orderByDesc('id')->paginate(15),
+            'rows' => $q->orderByDesc('id')->paginate(in_array($this->perPage, [8, 10, 25, 50, 100], true) ? $this->perPage : 8),
             'templates' => AreaInspectionTemplate::where('is_active', true)->orderBy('name')->get(['id', 'name', 'frequency']),
             'allTemplates' => AreaInspectionTemplate::orderBy('name')->get(),
             'locations' => Location::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'canAck' => $this->canAcknowledge(),
             'freqLabels' => AreaInspectionTemplate::FREQ_LABELS,
+            'kpi' => [
+                ['label' => '📋 ໃບ ກວດ ທັງໝົດ', 'value' => $total, 'hint' => 'records'],
+                ['label' => '⚠️ ພົບ NC', 'value' => $hasNc, 'hint' => 'has NC', 'tone' => 'text-rose-600'],
+                ['label' => '✅ ຜ່ານ', 'value' => $total - $hasNc, 'hint' => 'compliant'],
+                ['label' => '📅 ຮອດ ກຳນົດ', 'value' => AreaInspection::whereDate('next_due_date', '<=', today())->count(), 'hint' => 'due', 'tone' => 'text-amber-600'],
+                ['label' => '👍 ຍັງ ບໍ່ ຮັບຊາບ', 'value' => AreaInspection::whereNull('acknowledged_at')->count(), 'hint' => 'unack', 'tone' => 'text-amber-600'],
+            ],
         ]);
     }
 }

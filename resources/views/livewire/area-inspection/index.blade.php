@@ -13,9 +13,14 @@
 
         {{-- ══════════ TAB: records (ລົງມື ກວດ) ══════════ --}}
         @if ($tab === 'records')
+            {{-- live KPIs (page identity is already in the app top bar) --}}
+            @include('partials._kpi-band', ['tiles' => $kpi])
             <div class="flex flex-wrap items-center gap-2 justify-between">
                 <div class="text-sm text-gray-500">@if ($showDeleted) 🗑️ Deleted Log @else ລາຍການ ໃບ ກວດ ທີ່ ບັນທຶກ ແລ້ວ @endif</div>
                 <div class="flex items-center gap-2">
+                    <select wire:model.live="perPage" class="shrink-0 rounded-md border-gray-300 text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
+                        @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} ແຖວ</option>@endforeach
+                    </select>
                     @if ($this->canManageDeleted())
                         <button wire:click="toggleDeleted" class="text-xs text-gray-600 border border-gray-300 rounded-md px-2 py-1 min-h-[40px] hover:bg-gray-50">{{ $showDeleted ? '← ກັບ ລາຍການ' : 'ບັນທຶກ ການ ລຶບ' }}</button>
                     @endif
@@ -27,10 +32,10 @@
                 </div>
             </div>
 
-            <div class="bg-white border border-gray-100 rounded-lg overflow-auto max-h-[calc(100vh-16rem)]">
+            <div class="bg-white border border-gray-100 rounded-lg overflow-x-auto">
                 <table class="w-full text-sm">
-                    <thead class="sticky top-0 z-10 bg-gray-50 text-gray-500 shadow-sm">
-                        <tr>
+                    <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+                        <tr class="text-xs font-semibold uppercase tracking-wide">
                             <th class="text-left font-medium px-3 py-2">ເລກ</th>
                             <th class="text-left font-medium px-3 py-2">ສະຖານທີ່</th>
                             <th class="text-left font-medium px-3 py-2">ວັນທີ</th>

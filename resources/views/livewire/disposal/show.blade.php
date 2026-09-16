@@ -41,7 +41,7 @@
                 <div class="hidden md:flex items-center gap-x-3 gap-y-0.5 flex-wrap text-[11px] text-gray-500 mt-0.5">
                     <span class="inline-flex items-center gap-1">📝 {{ $record->title ?: 'ໃບ ຈຳໜ່າຍ ເຄື່ອງ ຊຳລຸດ' }}</span>
                     @if ($record->department)<span class="inline-flex items-center gap-1">🏢 {{ $record->department->name }}</span>@endif
-                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} ລາຍການ · {{ $record->items->sum('qty') }} ໜ່ວຍ</span>
+                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }} · {{ $record->items->sum('qty') }} ໜ່ວຍ</span>
                     @if ($record->preparedBy)<span class="inline-flex items-center gap-1">👤 {{ $record->preparedBy->display_name ?? $record->preparedBy->email }}</span>@endif
                     <span class="inline-flex items-center gap-1">📅 {{ $dt($record->created_at) }}</span>
                     @if ($record->original_deposit_date)<span class="inline-flex items-center gap-1 text-amber-700">📦 ຝາກເດີມ {{ $record->original_deposit_date->format('d/m/Y') }}</span>@endif

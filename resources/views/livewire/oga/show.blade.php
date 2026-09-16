@@ -33,7 +33,7 @@
                     <span class="inline-flex items-center gap-1">📍 {{ $record->dispatch_to_name ?? '—' }}</span>
                     <span class="inline-flex items-center gap-1">🚚 {{ strtoupper($record->ship_via ?? '—') }}</span>
                     <span class="inline-flex items-center gap-1">🗓 {{ $record->date?->format('d/m/Y') ?? '—' }}</span>
-                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} ລາຍການ</span>
+                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
                     @if ($record->source_da_number)<span class="inline-flex items-center gap-1 text-sky-700">DA {{ $record->source_da_number }}</span>@endif
                 </div>
             </div>

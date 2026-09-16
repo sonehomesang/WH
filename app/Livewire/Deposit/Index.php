@@ -172,7 +172,7 @@ class Index extends Component
             'chips' => [
                 $chip('', 'ທັງໝົດ', $counts->sum()),
                 $chip('needs_info', 'ຮ່າງ ລໍ ຕື່ມ ຂໍ້ມູນ', $needsInfo, true),
-                $chip('submitted', 'ລໍຮັບ', $counts['submitted'] ?? 0, true),
+                $chip('submitted', app()->getLocale() === 'en' ? 'Awaiting receipt' : 'ລໍຮັບ', $counts['submitted'] ?? 0, true),
                 $chip('accepted', 'ຮັບແລ້ວ', $counts['accepted'] ?? 0),
                 $chip('stored', 'ເກັບໄວ້', $counts['stored'] ?? 0),
                 $chip('needs_fix', 'ຕ້ອງແກ້', $counts['needs_fix'] ?? 0, true),

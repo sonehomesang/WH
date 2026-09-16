@@ -44,7 +44,7 @@
                     @foreach ($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach
                 </select>
                 <div class="flex-1"></div>
-                <span class="text-xs text-gray-400">ທັງໝົດ {{ $items->total() }} ລາຍການ</span>
+                <span class="text-xs text-gray-400">ທັງໝົດ {{ $items->total() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
                 <select wire:model.live="perPage" class="shrink-0 rounded-md border-gray-300 shadow-sm text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
                     @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} {{ app()->getLocale() === 'en' ? 'rows' : 'ແຖວ' }}</option>@endforeach
                 </select>
@@ -206,7 +206,7 @@
                     @foreach ($categories as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach
                 </select>
                 <div class="flex-1"></div>
-                <span class="text-xs text-gray-400">{{ $inspections->count() }} ລາຍການ</span>
+                <span class="text-xs text-gray-400">{{ $inspections->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
                 @if ($canManageDeleted)
                     <button wire:click="toggleDeletedInspections" class="text-sm border rounded-md px-3 py-2 min-h-[40px] whitespace-nowrap {{ $showDeletedInspections ? 'bg-gray-700 text-white border-gray-700' : 'text-gray-600 border-gray-300 hover:bg-gray-50' }}">
                         {{ $showDeletedInspections ? '← ໃບ ກວດ ປົກກະຕິ' : '🗑 ບັນທຶກ ການ ລຶບ' }}

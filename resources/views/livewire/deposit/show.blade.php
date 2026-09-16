@@ -42,7 +42,7 @@
                 <div class="hidden md:flex items-center gap-x-3 gap-y-0.5 flex-wrap text-[11px] text-gray-500 mt-0.5">
                     <span class="inline-flex items-center gap-1">👤 {{ $record->owner_name }}@if ($record->unit) · {{ $record->unit->name }}@endif</span>
                     <span class="inline-flex items-center gap-1">🏷️ {{ ['walk_in' => 'Walk-in', 'pre_request' => 'Pre-request', 'legacy' => 'ເຄື່ອງຝາກເກົ່າ'][$record->request_type] ?? 'Walk-in' }}</span>
-                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} ລາຍການ · {{ $record->items->sum('qty') }} ໜ່ວຍ</span>
+                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }} · {{ $record->items->sum('qty') }} ໜ່ວຍ</span>
                     <span class="inline-flex items-center gap-1">📅 ຝາກ {{ $record->deposit_date?->format('d/m/Y') }}</span>
                     @if ($record->storage_location || $record->storage_shelf_label)<span class="inline-flex items-center gap-1">📍 {{ collect([$record->storage_location, $record->storage_shelf_label])->filter()->implode(' / ') }}</span>@endif
                 </div>

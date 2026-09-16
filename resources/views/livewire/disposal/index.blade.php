@@ -89,7 +89,7 @@
                                 </td>
                                 <td class="px-3 py-1.5 align-top text-xs font-mono break-words {{ $fi?->fixed_asset_no ? 'text-gray-600' : 'text-gray-300' }}">{{ $fi?->fixed_asset_no ?: '—' }}@if ($fi?->fixed_asset_no && $r->items_count > 1)<span class="text-gray-300"> …</span>@endif</td>
                                 <td class="px-3 py-1.5 align-top text-xs">@if ($fi?->asset_code)<span class="font-mono bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 text-gray-600">{{ $fi->asset_code }}</span>@if ($r->items_count > 1)<span class="text-gray-300"> …</span>@endif @else<span class="text-gray-300">—</span>@endif</td>
-                                <td class="px-3 py-1.5 align-top whitespace-nowrap text-gray-700"><span class="font-semibold tabular-nums">{{ $r->items->sum('qty') }}</span> <span class="text-xs text-gray-400">({{ $r->items_count }} ລາຍການ)</span></td>
+                                <td class="px-3 py-1.5 align-top whitespace-nowrap text-gray-700"><span class="font-semibold tabular-nums">{{ $r->items->sum('qty') }}</span> <span class="text-xs text-gray-400">({{ $r->items_count }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }})</span></td>
                                 <td class="px-3 py-1.5 align-top text-gray-600 text-xs break-words">{{ $r->prepared_by_name ?? '—' }}</td>
                                 <td class="px-3 py-1.5 align-top whitespace-nowrap text-gray-500 text-xs tabular-nums">{{ $r->created_at?->format('d/m/Y') }}</td>
                                 <td class="px-3 py-1.5 align-top whitespace-nowrap"><span class="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 {{ $badge($r->status) }}">{{ $statusLabels[$r->status] ?? $r->status }}</span></td>

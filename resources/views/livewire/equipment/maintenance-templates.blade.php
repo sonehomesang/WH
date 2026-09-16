@@ -273,7 +273,7 @@
                 @endif
 
                 <div class="flex items-center justify-between text-xs text-gray-500">
-                    <span>{{ count($vItems) }} ລາຍການ</span>
+                    <span>{{ count($vItems) }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
                     <span><b class="text-sky-700">C</b>=ກວດ · <b class="text-amber-700">X</b>=ປ່ຽນ · —=ບໍ່ ເຮັດ</span>
                 </div>
 

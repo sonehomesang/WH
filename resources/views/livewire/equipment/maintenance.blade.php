@@ -22,7 +22,7 @@
             @foreach ($sLabels as $k => $v)<option value="{{ $k }}">{{ $v }}</option>@endforeach
         </select>
         <div class="flex-1"></div>
-        <span class="text-xs text-gray-400">ທັງໝົດ {{ $records->total() }} ລາຍການ</span>
+        <span class="text-xs text-gray-400">ທັງໝົດ {{ $records->total() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
         @if ($canManageDeleted)
             <button wire:click="toggleDeleted" class="text-sm border rounded-md px-3 py-2 min-h-[40px] whitespace-nowrap {{ $showDeleted ? 'bg-gray-700 text-white border-gray-700' : 'text-gray-600 border-gray-300 hover:bg-gray-50' }}">
                 {{ $showDeleted ? '← ລາຍການ ປົກກະຕິ' : '🗑 ບັນທຶກ ການ ລຶບ' }}

@@ -106,7 +106,7 @@
                                 <td class="px-3 py-1.5 align-top text-center whitespace-nowrap">
                                     <span class="font-semibold text-gray-800 tabular-nums">{{ $r->items->sum('qty') }}</span>
                                     @if ($first?->unit)<span class="text-xs text-gray-400"> {{ $first->unit }}</span>@endif
-                                    @if ($r->items->count() > 1)<div class="text-[11px] text-gray-400">{{ $r->items->count() }} ລາຍການ</div>@endif
+                                    @if ($r->items->count() > 1)<div class="text-[11px] text-gray-400">{{ $r->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</div>@endif
                                 </td>
                                 <td class="px-3 py-1.5 align-top text-xs whitespace-nowrap">@if ($first?->asset_code)<span class="font-mono bg-gray-50 text-gray-600 border border-gray-200 rounded px-1.5 py-0.5">{{ $first->asset_code }}</span>@if ($r->items->count() > 1)<span class="text-gray-300"> …</span>@endif @else<span class="text-gray-300">—</span>@endif</td>
                                 <td class="px-3 py-1.5 align-top text-xs whitespace-nowrap font-mono {{ $first?->fixed_asset_no ? 'text-gray-600' : 'text-gray-300' }}">{{ $first?->fixed_asset_no ?: '—' }}</td>

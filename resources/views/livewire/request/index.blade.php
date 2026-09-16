@@ -71,7 +71,7 @@
                             <tr wire:key="mr-{{ $r->id }}" class="hover:bg-amber-50/40 transition">
                                 <td class="px-3 py-1.5 align-top whitespace-nowrap"><a href="{{ route('request.show', $r) }}" wire:navigate class="font-mono text-sm font-medium text-indigo-600 hover:underline">{{ $r->request_number }}</a></td>
                                 <td class="px-3 py-1.5 align-top"><div class="font-semibold text-gray-800">{{ $r->requester_name }}</div><div class="text-xs text-gray-400">{{ $r->unit?->name ?? $r->requester_email }}</div></td>
-                                <td class="px-3 py-1.5 align-top text-gray-600 whitespace-nowrap">{{ $r->items->count() }} ລາຍການ<div class="text-xs text-gray-400">Qty {{ $r->items->sum('quantity') }}</div></td>
+                                <td class="px-3 py-1.5 align-top text-gray-600 whitespace-nowrap">{{ $r->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}<div class="text-xs text-gray-400">Qty {{ $r->items->sum('quantity') }}</div></td>
                                 <td class="px-3 py-1.5 align-top text-gray-600 w-full">{{ $r->purpose ?: '—' }}</td>
                                 <td class="px-3 py-1.5 align-top text-gray-600 whitespace-nowrap">@if ($r->wo_e_form)<span class="font-mono text-xs bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 text-gray-600">{{ $r->wo_e_form }}</span>@else—@endif@if ($r->request_type)<div class="text-xs text-gray-400 mt-0.5">{{ $r->request_type }}</div>@endif</td>
                                 <td class="px-3 py-1.5 align-top text-gray-700 whitespace-nowrap text-right tabular-nums"><span class="font-medium">{{ number_format($r->grand_total, 2) }}</span> <span class="text-xs text-gray-400">{{ $r->currency }}</span>@if ($r->vat_enabled)<div class="text-xs text-gray-400">+VAT {{ rtrim(rtrim(number_format($r->vat_rate, 2), '0'), '.') }}%</div>@endif</td>
@@ -103,7 +103,7 @@
                         <div class="min-w-0">
                             <div class="font-mono text-xs text-indigo-600">{{ $r->request_number }}</div>
                             <div class="font-semibold text-gray-800">{{ $r->requester_name }}</div>
-                            <div class="text-xs text-gray-500">{{ $r->items->count() }} ລາຍການ · {{ number_format($r->grand_total, 2) }} {{ $r->currency }}</div>
+                            <div class="text-xs text-gray-500">{{ $r->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }} · {{ number_format($r->grand_total, 2) }} {{ $r->currency }}</div>
                             @if ($r->purpose)<div class="text-xs text-gray-500 truncate">{{ $r->purpose }}</div>@endif
                             @if ($r->wo_e_form || $r->sapStatusLabel())<div class="text-xs text-gray-400 truncate">@if ($r->wo_e_form)WO {{ $r->wo_e_form }}@endif @if ($r->sapStatusLabel())<span class="text-violet-600">SAP: {{ $r->sapStatusLabel() }}</span>@endif</div>@endif
                         </div>

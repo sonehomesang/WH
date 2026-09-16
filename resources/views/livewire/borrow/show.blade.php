@@ -42,7 +42,7 @@
                 </div>
                 <div class="hidden md:flex items-center gap-x-3 gap-y-0.5 flex-wrap text-[11px] text-gray-500 mt-0.5">
                     <span class="inline-flex items-center gap-1">👤 {{ $record->borrower_name }}@if ($record->unit) · {{ $record->unit->name }}@endif</span>
-                    <span class="inline-flex items-center gap-1">🔄 {{ $record->items->count() }} ລາຍການ · {{ $record->items->sum('qty') }} ໜ່ວຍ</span>
+                    <span class="inline-flex items-center gap-1">🔄 {{ $record->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }} · {{ $record->items->sum('qty') }} ໜ່ວຍ</span>
                     <span class="inline-flex items-center gap-1">📅 ຢືມ {{ $record->borrow_date?->format('d/m/Y') }}</span>
                     <span class="inline-flex items-center gap-1">↩ ກຳນົດ {{ $record->planned_return_date?->format('d/m/Y') }}</span>
                 </div>

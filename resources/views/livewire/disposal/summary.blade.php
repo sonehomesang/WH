@@ -78,7 +78,7 @@
                     @if ($items->count())
                         <tfoot class="bg-gradient-to-r from-emerald-50 to-teal-50 font-semibold text-gray-800 border-t-2 border-emerald-200 sticky bottom-0">
                             <tr>
-                                <td class="px-3 py-2.5" colspan="3">ລວມ {{ number_format($items->count()) }} ລາຍການ</td>
+                                <td class="px-3 py-2.5" colspan="3">ລວມ {{ number_format($items->count()) }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</td>
                                 <td class="px-3 py-2.5 text-right whitespace-nowrap tabular-nums">{{ number_format($totalQty) }}</td>
                                 <td colspan="2"></td>
                                 <td class="px-3 py-2.5 text-right whitespace-nowrap tabular-nums text-emerald-700">{{ number_format($totalValue) }} ກີບ</td>

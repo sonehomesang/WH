@@ -45,7 +45,7 @@
                 </div>
                 <div class="hidden md:flex items-center gap-x-3 gap-y-0.5 flex-wrap text-[11px] text-gray-500 mt-0.5">
                     <span class="inline-flex items-center gap-1">👤 {{ $record->requester_name }}@if ($record->unit) · {{ $record->unit->name }}@endif</span>
-                    <span class="inline-flex items-center gap-1">📝 {{ $record->items->count() }} ລາຍການ · Qty {{ $record->items->sum('quantity') }}</span>
+                    <span class="inline-flex items-center gap-1">📝 {{ $record->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }} · Qty {{ $record->items->sum('quantity') }}</span>
                     <span class="inline-flex items-center gap-1 font-semibold text-gray-700">💰 {{ number_format($record->grand_total, 2) }} {{ $record->currency }}</span>
                     @if ($record->supplier)<span class="inline-flex items-center gap-1">🏬 {{ $record->supplier->name }}</span>@endif
                 </div>

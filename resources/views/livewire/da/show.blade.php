@@ -34,7 +34,7 @@
                     <span class="inline-flex items-center gap-1">🏢 {{ $record->supplier_name ?? '—' }}</span>
                     <span class="inline-flex items-center gap-1">PO {{ $record->po_number ?? '—' }}</span>
                     <span class="inline-flex items-center gap-1">🗓 {{ $record->date?->format('d/m/Y') ?? '—' }}</span>
-                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} ລາຍການ</span>
+                    <span class="inline-flex items-center gap-1">📦 {{ $record->items->count() }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
                     @if ($record->next_step === 'oga')<span class="inline-flex items-center gap-1 text-sky-700">→ OGA</span>@endif
                 </div>
             </div>

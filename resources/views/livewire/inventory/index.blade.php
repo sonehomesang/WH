@@ -118,7 +118,7 @@
                     <span class="rounded-full px-1.5 tabular-nums {{ $stockFilter === $c['k'] ? 'bg-white/20' : 'bg-gray-100' }}">{{ number_format($c['count']) }}</span>
                 </button>
             @endforeach
-            <span class="text-xs text-gray-400 ml-1">{{ number_format($items->total()) }} ລາຍການ</span>
+            <span class="text-xs text-gray-400 ml-1">{{ number_format($items->total()) }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
         </div>
         </div>{{-- /frozen header group --}}
 
@@ -322,7 +322,7 @@
 
                 @if ($importResult)
                     <div class="text-sm rounded-md border border-green-200 bg-green-50 p-3 space-y-1">
-                        <div class="text-green-800 font-medium">✓ ນຳເຂົ້າ {{ $importResult['imported'] }} ລາຍການ · ຂ້າມ {{ $importResult['skipped'] }}</div>
+                        <div class="text-green-800 font-medium">✓ ນຳເຂົ້າ {{ $importResult['imported'] }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }} · ຂ້າມ {{ $importResult['skipped'] }}</div>
                         @if (count($importResult['errors']))
                             <details class="text-xs text-gray-600">
                                 <summary class="cursor-pointer">ລາຍລະອຽດ {{ count($importResult['errors']) }} ຂໍ້ຄວາມ</summary>

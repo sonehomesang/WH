@@ -179,7 +179,7 @@
                     </div>
                     <div class="flex justify-end gap-2 px-5 py-3 bg-gray-50/70 border-t border-gray-100 shrink-0">
                         <button wire:click="$set('showPull', false)" class="text-sm bg-white border border-gray-300 rounded-lg px-4 py-2 min-h-[40px] hover:bg-gray-50 transition">ຍົກເລີກ</button>
-                        <button wire:click="autoPull" wire:loading.attr="disabled" wire:target="autoPull" class="text-sm font-medium text-white bg-sky-600 rounded-lg px-4 py-2 min-h-[40px] hover:bg-sky-700 disabled:opacity-50 transition shadow-sm">ດຶງ ອອກ {{ $pullCount }} ລາຍການ →</button>
+                        <button wire:click="autoPull" wire:loading.attr="disabled" wire:target="autoPull" class="text-sm font-medium text-white bg-sky-600 rounded-lg px-4 py-2 min-h-[40px] hover:bg-sky-700 disabled:opacity-50 transition shadow-sm">ດຶງ ອອກ {{ $pullCount }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }} →</button>
                     </div>
                 </div>
             </div>

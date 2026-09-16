@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        @include('partials._status-chips', ['chips' => $chips, 'current' => $statusFilter, 'trailing' => number_format($materials->total()).' ລາຍການ'])
+        @include('partials._status-chips', ['chips' => $chips, 'current' => $statusFilter, 'trailing' => number_format($materials->total()).' '.(app()->getLocale() === 'en' ? 'items' : 'ລາຍການ')])
         </div>{{-- /frozen header group --}}
 
         @if (session('ok'))<div class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 mb-2">{{ session('ok') }}</div>@endif

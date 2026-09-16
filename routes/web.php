@@ -54,12 +54,29 @@ Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'logi
 
 // UI language toggle (Lao default / English). Stored in the session; the
 // SetLocale middleware applies it. Available to guests too (login page).
-Route::get('locale/{locale}', function (string $locale) {
+Route::get('locale/{locale}', function (\Illuminate\Http\Request $request, string $locale) {
     if (in_array($locale, \App\Http\Middleware\SetLocale::SUPPORTED, true)) {
         session(['app_locale' => $locale]);
     }
 
-    return back();
+    // Return the user to where they were — but only to a LOCAL path, never a
+    // forged Referer host (no open redirect). We keep just the path+query of the
+    // referer and redirect relative, so the browser resolves it same-origin.
+    // Reject protocol-relative ("//evil.com") and anything not starting with "/".
+    $referer = (string) $request->headers->get('referer', '');
+    $path = $referer !== '' ? parse_url($referer, PHP_URL_PATH) : null;
+
+    // Accept only a plain local path: one leading "/", not protocol-relative
+    // ("//host"), and no backslash (some browsers fold "/\host" into "//host").
+    if (is_string($path) && str_starts_with($path, '/')
+        && ! str_starts_with($path, '//')
+        && ! str_contains($path, '\\')) {
+        $query = parse_url($referer, PHP_URL_QUERY);
+
+        return redirect()->to($path.($query ? '?'.$query : ''));
+    }
+
+    return redirect()->route('home');
 })->name('locale.switch');
 
 // PWA manifest — dynamic so it reflects the General › app name setting.

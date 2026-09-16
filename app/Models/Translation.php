@@ -194,13 +194,17 @@ class Translation extends Model
      */
     private static function swapExact(string $text, array $map): string
     {
-        $trimmed = self::nfc(trim($text));   // map keys are NFC in English mode
-        if ($trimmed === '' || ! isset($map[$trimmed])) {
+        // Peel off surrounding whitespace AND stashed-block markers (\x00N\x00 —
+        // the placeholders that stand in for Livewire's <!--[if BLOCK]--> comments
+        // an @if leaves next to the label); match the core, keep the wrappers.
+        if (! preg_match('/^((?:\s|\x00\d+\x00)*)(.*?)((?:\s|\x00\d+\x00)*)$/su', $text, $m)) {
             return $text;
         }
-        preg_match('/^\s*/', $text, $lead);
-        preg_match('/\s*$/', $text, $tail);
+        $core = self::nfc(trim($m[2]));   // map keys are NFC in English mode
+        if ($core === '' || ! isset($map[$core])) {
+            return $text;
+        }
 
-        return $lead[0].$map[$trimmed].$tail[0];
+        return $m[1].$map[$core].$m[3];
     }
 }

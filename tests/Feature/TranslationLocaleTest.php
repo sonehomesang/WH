@@ -44,6 +44,19 @@ test('en exact-match never bleeds into a longer untranslated phrase', function (
         ->toContain('ຜູ້ຢືມ ປັດຈຸບັນ')->not->toContain('Borrower');
 });
 
+test('en exact-match sees through Livewire @if block comments around a label', function () {
+    Translation::create([
+        'type' => 'replace', 'group' => 'custom',
+        'source' => 'ທັງໝົດ', 'target' => 'ທັງໝົດ', 'target_en' => 'All', 'is_active' => true,
+    ]);
+
+    app()->setLocale('en');
+    // an @if with no body still emits these conditional comments right before the
+    // label; the swap must look past them (and their stash placeholders).
+    $html = '<button><!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->  ທັງໝົດ  <span>0</span></button>';
+    expect(Translation::applyReplacements($html))->toContain('All')->not->toContain('ທັງໝົດ');
+});
+
 test('an empty target_en falls back to the Lao source in en mode', function () {
     Translation::create([
         'type' => 'replace', 'group' => 'custom',

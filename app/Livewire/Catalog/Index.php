@@ -306,7 +306,7 @@ class Index extends Component
                 ['label' => '✅ active', 'value' => $total - $inactive, 'hint' => 'active'],
                 ['label' => '⏸️ inactive', 'value' => $inactive, 'hint' => 'inactive', 'tone' => 'text-amber-600'],
                 ['label' => '🏢 suppliers', 'value' => $suppliersUsed, 'hint' => 'ຮ້ານຄ້າ'],
-                ['label' => '🗂️ ປະເພດ', 'value' => $categories->count(), 'hint' => 'categories'],
+                ['label' => app()->getLocale() === 'en' ? '🗂️ Categories' : '🗂️ ປະເພດ', 'value' => $categories->count(), 'hint' => 'categories'],
             ],
             'suppliers' => Supplier::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'categories' => $categories,

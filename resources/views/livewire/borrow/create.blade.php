@@ -10,7 +10,7 @@
             <div class="p-4 space-y-3">
                 <div class="inline-flex rounded-lg border border-gray-200 overflow-hidden text-sm flex-wrap">
                     @foreach (['new_inventory' => 'ສາງ / Inventory', 'tools_equipment' => 'ເຄື່ອງມື / Tools', 'others' => 'ອື່ນໆ / Others'] as $v => $l)
-                        <button type="button" wire:click="$set('borrow_type', '{{ $v }}')" class="px-4 py-2 transition {{ $borrow_type === $v ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50' }} {{ ! $loop->first ? 'border-l border-gray-200' : '' }}">{{ $l }}</button>
+                        <button type="button" wire:click="$set('borrow_type', '{{ $v }}')" class="px-4 py-2 transition {{ $borrow_type === $v ? 'bg-sky-600 text-white' : 'text-gray-600 hover:bg-gray-50' }} {{ ! $loop->first ? 'border-l border-gray-200' : '' }}">{{ $l }}</button>
                     @endforeach
                 </div>
                 @if ($borrow_type === 'others')
@@ -117,7 +117,7 @@
         <div class="bg-white/95 backdrop-blur border border-gray-200 rounded-xl px-5 py-3 flex items-center justify-end gap-2 sticky bottom-4 shadow-lg">
             <a href="{{ route('borrow') }}" wire:navigate class="text-sm text-gray-600 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 flex items-center transition">ຍົກເລີກ</a>
             <button wire:click="save(false)" class="text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition">💾 ບັນທຶກ draft</button>
-            <button wire:click="save(true)" class="inline-flex items-center gap-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg px-4 py-2 hover:bg-indigo-700 transition shadow-sm">ສົ່ງຂໍອະນຸມັດ →</button>
+            <button wire:click="save(true)" class="inline-flex items-center gap-1.5 text-sm font-medium text-white bg-sky-600 rounded-lg px-4 py-2 hover:bg-sky-700 transition shadow-sm">ສົ່ງຂໍອະນຸມັດ →</button>
         </div>
     </div>
 </div>

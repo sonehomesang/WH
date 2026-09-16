@@ -208,7 +208,7 @@
         {{-- actions --}}
         <div class="bg-white/95 backdrop-blur border border-gray-200 rounded-xl px-5 py-3 flex flex-wrap gap-2 items-center text-sm sticky bottom-4 shadow-lg">
             @if ($record->status === 'draft')
-                @if (auth()->user()->can('disposal.create'))<button wire:click="submit" wire:loading.attr="disabled" class="inline-flex items-center gap-1.5 text-white bg-indigo-600 font-medium rounded-lg px-4 py-2 hover:bg-indigo-700 transition shadow-sm">📨 ສົ່ງ ຂໍ ຮັບຮອງ</button>@endif
+                @if (auth()->user()->can('disposal.create'))<button wire:click="submit" wire:loading.attr="disabled" class="inline-flex items-center gap-1.5 text-white bg-sky-600 font-medium rounded-lg px-4 py-2 hover:bg-sky-700 transition shadow-sm">📨 ສົ່ງ ຂໍ ຮັບຮອງ</button>@endif
                 <button wire:click="openCancel" class="text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">ຍົກເລີກ</button>
             @elseif (! in_array($record->status, ['disposed', 'cancelled', 'rejected']))
                 <button wire:click="openCancel" class="text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">ຍົກເລີກ ໃບ</button>

@@ -116,7 +116,7 @@
         {{-- action bar --}}
         <div class="bg-white/95 backdrop-blur border border-gray-200 rounded-xl px-5 py-3 flex items-center justify-end gap-2 sticky bottom-4 shadow-lg">
             <button wire:click="save(false)" wire:loading.attr="disabled" wire:target="save,files" class="text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-4 py-2.5 hover:bg-gray-50 disabled:opacity-50">💾 Save draft</button>
-            <button wire:click="save(true)" wire:loading.attr="disabled" wire:target="save,files" class="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg px-5 py-2.5 hover:bg-indigo-700 disabled:opacity-50 transition shadow-sm">Submit → HoS/TL</button>
+            <button wire:click="save(true)" wire:loading.attr="disabled" wire:target="save,files" class="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-sky-600 rounded-lg px-5 py-2.5 hover:bg-sky-700 disabled:opacity-50 transition shadow-sm">Submit → HoS/TL</button>
         </div>
     </div>
 </div>

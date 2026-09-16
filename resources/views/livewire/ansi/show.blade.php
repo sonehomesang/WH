@@ -66,7 +66,7 @@
                 @if ($this->isOriginator() && $record->status === 'draft')
                     <button wire:click="openEdit" class="text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 hover:bg-amber-100">✏️ Edit</button>
                     <button wire:click="cancel" wire:confirm="Cancel this application?" class="text-sm font-medium text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel</button>
-                    <button wire:click="submit" class="text-sm font-semibold text-white bg-indigo-600 rounded-lg px-5 py-2 hover:bg-indigo-700">Submit → HoS/TL</button>
+                    <button wire:click="submit" class="text-sm font-semibold text-white bg-sky-600 rounded-lg px-5 py-2 hover:bg-sky-700">Submit → HoS/TL</button>
                 @elseif ($this->canEndorse())
                     <button wire:click="openReject('hos')" class="text-sm font-medium text-rose-700 bg-white border border-rose-200 rounded-lg px-4 py-2 hover:bg-rose-50">✕ Reject</button>
                     <button wire:click="endorse" class="text-sm font-semibold text-white bg-emerald-600 rounded-lg px-5 py-2 hover:bg-emerald-700">✓ Endorse → Manager</button>
@@ -75,7 +75,7 @@
                     <button wire:click="approve" class="text-sm font-semibold text-white bg-emerald-600 rounded-lg px-5 py-2 hover:bg-emerald-700">✓ Approve → Warehouse</button>
                 @elseif ($this->canWarehouse())
                     <button wire:click="openReject('warehouse')" class="text-sm font-medium text-rose-700 bg-white border border-rose-200 rounded-lg px-4 py-2 hover:bg-rose-50">✕ Reject</button>
-                    <button wire:click="openWarehouse" class="text-sm font-semibold text-white bg-indigo-600 rounded-lg px-5 py-2 hover:bg-indigo-700">🏷️ Complete (item no. + PR)</button>
+                    <button wire:click="openWarehouse" class="text-sm font-semibold text-white bg-sky-600 rounded-lg px-5 py-2 hover:bg-sky-700">🏷️ Complete (item no. + PR)</button>
                 @elseif ($this->isOriginator())
                     <button wire:click="cancel" wire:confirm="Cancel this application?" class="text-sm font-medium text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel application</button>
                 @endif
@@ -207,7 +207,7 @@
                 <div><label class="block text-xs font-medium text-gray-500 mb-1">Note (optional)</label><textarea wire:model="warehouseNote" rows="2" class="w-full rounded-lg border-gray-300 text-sm"></textarea></div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button wire:click="$set('showWarehouse', false)" class="text-sm border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel</button>
-                    <button wire:click="warehouseComplete" class="text-sm text-white bg-indigo-600 rounded-lg px-4 py-2 hover:bg-indigo-700">✓ Complete & notify originator</button>
+                    <button wire:click="warehouseComplete" class="text-sm text-white bg-sky-600 rounded-lg px-4 py-2 hover:bg-sky-700">✓ Complete & notify originator</button>
                 </div>
             </div>
         </div>

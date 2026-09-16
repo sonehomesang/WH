@@ -139,7 +139,7 @@
             <span class="text-xs text-gray-400 hidden sm:inline">ບັນທຶກ ຮ່າງ ກ່ອນ ແລ້ວ ຄ່ອຍ ມອບໝາຍ ຜູ້ ຮັບຮອງ + ສົ່ງ ຂໍ ຮັບຮອງ</span>
             <div class="flex gap-2 ml-auto">
                 <button wire:click="save(false)" wire:loading.attr="disabled" wire:target="save,photos" class="text-sm font-medium text-gray-700 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 disabled:opacity-50 transition">ບັນທຶກ ຮ່າງ</button>
-                <button wire:click="save(true)" wire:loading.attr="disabled" wire:target="save,photos" class="inline-flex items-center gap-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg px-4 py-2 hover:bg-indigo-700 disabled:opacity-50 transition shadow-sm">📨 ສົ່ງ ຂໍ ຮັບຮອງ</button>
+                <button wire:click="save(true)" wire:loading.attr="disabled" wire:target="save,photos" class="inline-flex items-center gap-1.5 text-sm font-medium text-white bg-sky-600 rounded-lg px-4 py-2 hover:bg-sky-700 disabled:opacity-50 transition shadow-sm">📨 ສົ່ງ ຂໍ ຮັບຮອງ</button>
             </div>
         </div>
 

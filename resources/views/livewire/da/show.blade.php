@@ -138,7 +138,7 @@
             <span class="text-gray-400 mr-1">Actions:</span>
             @if ($record->status === 'draft')
                 @if ($editable)<button wire:click="openItems" class="text-sky-700 border border-sky-200 bg-sky-50 rounded px-3 py-1.5">✏️ ແກ້ ລາຍການ</button>@endif
-                <button wire:click="submit" class="text-white bg-indigo-600 rounded px-3 py-1.5">ສົ່ງ</button>
+                <button wire:click="submit" class="text-white bg-sky-600 rounded px-3 py-1.5">ສົ່ງ</button>
                 <button wire:click="$set('showCancel', true)" class="border rounded px-3 py-1.5">ຍົກເລີກ</button>
             @elseif ($record->status === 'submitted')
                 @if ($canAct)<button wire:click="purchasingStart" class="text-white bg-violet-600 rounded px-3 py-1.5">ເລີ່ມ Purchasing review</button>@endif

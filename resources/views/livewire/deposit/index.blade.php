@@ -56,7 +56,7 @@
                     </select>
                     @if ($canManageDeleted)<button wire:click="toggleDeleted" title="ເບິ່ງ ລາຍການ ທີ່ ລຶບ ແລ້ວ ເພື່ອ ກູ້ຄືນ" class="text-sm rounded-lg px-3 py-2 min-h-[40px] border transition whitespace-nowrap {{ $showDeleted ? 'bg-rose-600 text-white border-rose-600' : 'text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100' }}">{{ $showDeleted ? '← ກັບ ລິສ' : '↩ ລາຍການ ທີ່ ຖືກ ລຶບ' }}</button>@endif
                     <a href="{{ route('deposit.report', ['search' => $search, 'status' => $statusFilter, 'type' => $typeFilter, 'unit' => $unitFilter, 'condition' => $conditionFilter]) }}" target="_blank" rel="noopener" title="ພິມ ບັນຊີ ລາຍການ (ຕາມ filter ນີ້) ພ້ອມ letterhead" class="text-sm rounded-lg px-3 py-2 min-h-[40px] border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 inline-flex items-center transition whitespace-nowrap">🖨 ພິມ ບັນຊີ</a>
-                    @can('deposit.create')<a href="{{ route('deposit.create') }}" wire:navigate class="text-sm font-medium text-white bg-indigo-600 rounded-lg px-3.5 py-2 min-h-[40px] inline-flex items-center hover:bg-indigo-700 transition shadow-sm whitespace-nowrap">+ Deposit</a>@endcan
+                    @can('deposit.create')<a href="{{ route('deposit.create') }}" wire:navigate class="text-sm font-medium text-white bg-sky-600 rounded-lg px-3.5 py-2 min-h-[40px] inline-flex items-center hover:bg-sky-700 transition shadow-sm whitespace-nowrap">+ Deposit</a>@endcan
                 </div>
             </div>
 

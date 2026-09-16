@@ -168,7 +168,7 @@
         {{-- actions --}}
         <div class="bg-white/95 backdrop-blur rounded-xl border border-gray-200 px-5 py-3 flex flex-wrap gap-2 text-sm items-center sticky bottom-4 z-20 shadow-lg">
             @if ($record->status === 'draft')
-                @if ($isOwner || $editable)<button wire:click="submit" class="inline-flex items-center gap-1.5 text-white bg-indigo-600 font-medium rounded-lg px-4 py-2 hover:bg-indigo-700 transition shadow-sm">📤 ສົ່ງຄຳຂໍ</button>@endif
+                @if ($isOwner || $editable)<button wire:click="submit" class="inline-flex items-center gap-1.5 text-white bg-sky-600 font-medium rounded-lg px-4 py-2 hover:bg-sky-700 transition shadow-sm">📤 ສົ່ງຄຳຂໍ</button>@endif
                 <button wire:click="$set('showCancel', true)" class="text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">ຍົກເລີກ</button>
             @elseif ($record->status === 'submitted')
                 @if ($editable)<button wire:click="openAccept" class="inline-flex items-center gap-1.5 text-white bg-emerald-600 font-medium rounded-lg px-4 py-2 hover:bg-emerald-700 transition shadow-sm">✓ ຮັບຝາກ + ກຳນົດບ່ອນເກັບ</button>@endif
@@ -178,7 +178,7 @@
                 <button wire:click="$set('showCancel', true)" class="text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">ຍົກເລີກ</button>
             @elseif ($record->status === 'stored')
                 @if ($editable)
-                    <button wire:click="openClaim" class="inline-flex items-center gap-1.5 text-white bg-indigo-700 font-medium rounded-lg px-4 py-2 hover:bg-indigo-800 transition shadow-sm">↥ ບັນທຶກການເອົາຄືນ</button>
+                    <button wire:click="openClaim" class="inline-flex items-center gap-1.5 text-white bg-sky-700 font-medium rounded-lg px-4 py-2 hover:bg-sky-800 transition shadow-sm">↥ ບັນທຶກການເອົາຄືນ</button>
                     <button wire:click="openFlag" class="text-amber-700 border border-amber-200 bg-amber-50 rounded-lg px-3 py-2 hover:bg-amber-100 transition">⚠ ແຈ້ງບັນຫາ</button>
                 @endif
             @elseif ($record->status === 'needs_fix')

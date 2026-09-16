@@ -61,7 +61,7 @@
                 {{-- right: per-page + actions --}}
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
                     <select wire:model.live="perPage" class="shrink-0 rounded-lg border-gray-300 text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
-                        @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} ແຖວ</option>@endforeach
+                        @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} {{ app()->getLocale() === 'en' ? 'rows' : 'ແຖວ' }}</option>@endforeach
                     </select>
                     @if ($canDailyCheck)<button wire:click="runDailyCheck" wire:loading.attr="disabled" class="text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 min-h-[40px] hover:bg-amber-100 transition whitespace-nowrap" title="ສົ່ງເຕືອນ ລາຍການ ໃກ້/ເກີນ ກຳນົດ">⏰ Daily Check</button>@endif
                     @if ($canManageDeleted)<button wire:click="toggleDeleted" class="text-sm rounded-lg px-3 py-2 min-h-[40px] border transition whitespace-nowrap {{ $showDeleted ? 'bg-rose-600 text-white border-rose-600' : 'text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100' }}">🗑 {{ $showDeleted ? 'ກັບຄືນ' : 'Deleted' }}</button>@endif

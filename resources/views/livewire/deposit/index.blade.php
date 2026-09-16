@@ -52,7 +52,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
                     <select wire:model.live="perPage" class="shrink-0 rounded-lg border-gray-300 text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
-                        @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} ແຖວ</option>@endforeach
+                        @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} {{ app()->getLocale() === 'en' ? 'rows' : 'ແຖວ' }}</option>@endforeach
                     </select>
                     @if ($canManageDeleted)<button wire:click="toggleDeleted" title="ເບິ່ງ ລາຍການ ທີ່ ລຶບ ແລ້ວ ເພື່ອ ກູ້ຄືນ" class="text-sm rounded-lg px-3 py-2 min-h-[40px] border transition whitespace-nowrap {{ $showDeleted ? 'bg-rose-600 text-white border-rose-600' : 'text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100' }}">{{ $showDeleted ? '← ກັບ ລິສ' : '↩ ລາຍການ ທີ່ ຖືກ ລຶບ' }}</button>@endif
                     <a href="{{ route('deposit.report', ['search' => $search, 'status' => $statusFilter, 'type' => $typeFilter, 'unit' => $unitFilter, 'condition' => $conditionFilter]) }}" target="_blank" rel="noopener" title="ພິມ ບັນຊີ ລາຍການ (ຕາມ filter ນີ້) ພ້ອມ letterhead" class="text-sm rounded-lg px-3 py-2 min-h-[40px] border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 inline-flex items-center transition whitespace-nowrap">🖨 ພິມ ບັນຊີ</a>

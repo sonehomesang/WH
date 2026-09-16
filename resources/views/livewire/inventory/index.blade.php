@@ -77,7 +77,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-2 shrink-0">
                 <select wire:model.live="perPage" class="shrink-0 rounded-md border-gray-300 text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
-                    @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} ແຖວ</option>@endforeach
+                    @foreach ([8, 10, 25, 50, 100] as $n)<option value="{{ $n }}">{{ $n }} {{ app()->getLocale() === 'en' ? 'rows' : 'ແຖວ' }}</option>@endforeach
                 </select>
                 <div class="relative hidden md:block" x-on:click.outside="colsOpen = false">
                     <button type="button" x-on:click="colsOpen = !colsOpen" class="text-sm text-gray-700 border border-gray-300 bg-white rounded-md px-3 py-2 min-h-[40px] hover:bg-gray-50 whitespace-nowrap">⚙ Columns</button>

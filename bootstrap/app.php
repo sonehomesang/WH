@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\MustChangePassword;
 use App\Http\Middleware\ReplaceTerms;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Per-request UI language (Lao default, user may switch to English).
+        $middleware->appendToGroup('web', SetLocale::class);
+
         // Admin wording overrides applied to rendered HTML (Phase 6.11).
         $middleware->appendToGroup('web', ReplaceTerms::class);
 

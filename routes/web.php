@@ -52,6 +52,16 @@ use Illuminate\Support\Facades\Storage;
 // ໜ້າ ທຳອິດ: login ແລ້ວ → dashboard, ຍັງ → ໜ້າ login (ບໍ່ ມີ ໜ້າ welcome ເກົ່າ ແລ້ວ).
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'))->name('home');
 
+// UI language toggle (Lao default / English). Stored in the session; the
+// SetLocale middleware applies it. Available to guests too (login page).
+Route::get('locale/{locale}', function (string $locale) {
+    if (in_array($locale, \App\Http\Middleware\SetLocale::SUPPORTED, true)) {
+        session(['app_locale' => $locale]);
+    }
+
+    return back();
+})->name('locale.switch');
+
 // PWA manifest — dynamic so it reflects the General › app name setting.
 Route::get('manifest.webmanifest', function () {
     $name = Setting::get('general', [])['app_name'] ?? 'WH — Warehouse';

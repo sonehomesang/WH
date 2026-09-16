@@ -146,6 +146,15 @@
                                 @endif
                             </div>
                             <div class="flex items-center gap-1">
+                                {{-- Language toggle (Lao / English) — top-right --}}
+                                <div class="flex items-center rounded-lg border border-white/70 bg-white/70 backdrop-blur text-xs font-semibold overflow-hidden shrink-0 mr-1" title="ປ່ຽນ ພາສາ / Language">
+                                    <a href="{{ route('locale.switch', 'lo') }}"
+                                       class="px-2 py-1 min-h-[30px] flex items-center {{ app()->getLocale() === 'lo' ? 'bg-sky-600 text-white' : 'text-gray-600 hover:bg-white' }}"
+                                       aria-label="ພາສາລາວ" @if (app()->getLocale() === 'lo') aria-current="true" @endif>ລາວ</a>
+                                    <a href="{{ route('locale.switch', 'en') }}"
+                                       class="px-2 py-1 min-h-[30px] flex items-center {{ app()->getLocale() === 'en' ? 'bg-sky-600 text-white' : 'text-gray-600 hover:bg-white' }}"
+                                       aria-label="English" @if (app()->getLocale() === 'en') aria-current="true" @endif>EN</a>
+                                </div>
                                 @auth
                                     <button type="button" x-data="{ busy: false }" @click="busy = true; window.updateApp()" :disabled="busy"
                                             class="p-2 text-gray-500 hover:text-sky-600 rounded-md hover:bg-gray-50 disabled:opacity-50"

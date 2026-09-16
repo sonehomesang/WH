@@ -30,8 +30,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Lao-first app: ຂໍ້ຄວາມ validation / diffForHumans ໃຫ້ເປັນລາວ (lang/lo).
-        // .env APP_LOCALE=en ເປັນຄ່າ default ເກົ່າ — ບັງຄັບ lo ໃຫ້ຄົງທີ່ ບໍ່ຂຶ້ນກັບ .env.
+        // Lao-first app: default UI language = lo (validation / diffForHumans in
+        // Lao). A user may switch to 'en' via the top-right toggle — the SetLocale
+        // middleware applies the per-request choice. Missing 'en' strings fall back
+        // to 'lo' so nothing ever renders a raw translation key.
+        config(['app.fallback_locale' => 'lo']);
         $this->app->setLocale('lo');
 
         // super_admin ມີສິດເໜືອທຸກຢ່າງ (ເໜືອ admin ທົ່ວໄປ) — bypass ທຸກ permission check.

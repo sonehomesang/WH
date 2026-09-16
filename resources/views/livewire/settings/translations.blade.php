@@ -34,8 +34,9 @@
                     <thead class="sticky top-0 z-10 bg-gray-50 text-gray-700 border-b border-gray-200 shadow-sm text-xs">
                         <tr>
                             <th class="text-left px-3 py-2 font-semibold">ໝວດ</th>
-                            <th class="text-left px-3 py-2 font-medium w-2/5">ຄຳ ເດີມ (ໃນແອັບ)</th>
-                            <th class="text-left px-3 py-2 font-medium w-2/5">ແກ້ເປັນ →</th>
+                            <th class="text-left px-3 py-2 font-medium w-1/3">ຄຳ ເດີມ (ໃນແອັບ)</th>
+                            <th class="text-left px-3 py-2 font-medium w-1/4">ລາວ (ແກ້ຄຳ)</th>
+                            <th class="text-left px-3 py-2 font-medium w-1/4">🇬🇧 English</th>
                             <th class="text-center px-3 py-2 font-medium">ໃຊ້</th>
                             <th class="px-3 py-2"></th>
                         </tr>
@@ -46,11 +47,12 @@
                                 <td class="px-3 py-1.5 text-[11px] text-gray-400 whitespace-nowrap align-top pt-3">{{ $r['group'] }}</td>
                                 <td class="px-3 py-1.5"><input type="text" wire:model="rep.{{ $i }}.source" @disabled(! $editable) class="w-full rounded border-gray-200 text-sm bg-gray-50" dir="auto" readonly /></td>
                                 <td class="px-3 py-1.5"><input type="text" wire:model.lazy="rep.{{ $i }}.target" @disabled(! $editable) class="w-full rounded border-gray-200 text-sm" dir="auto" /></td>
+                                <td class="px-3 py-1.5"><input type="text" wire:model.lazy="rep.{{ $i }}.target_en" @disabled(! $editable) class="w-full rounded border-gray-200 text-sm" dir="ltr" placeholder="English…" /></td>
                                 <td class="px-3 py-1.5 text-center align-middle"><input type="checkbox" wire:model="rep.{{ $i }}.is_active" @disabled(! $editable) class="rounded border-gray-300 text-sky-600" /></td>
                                 <td class="px-3 py-1.5 text-right">@if ($editable)<button wire:click="remove('replace', {{ $i }})" class="text-red-400 hover:text-red-600 text-xs">✕</button>@endif</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="px-3 py-6 text-center text-gray-400">ບໍ່ພົບ — ລອງ ປ່ຽນ ໝວດ/ຄົ້ນຫາ</td></tr>
+                            <tr><td colspan="6" class="px-3 py-6 text-center text-gray-400">ບໍ່ພົບ — ລອງ ປ່ຽນ ໝວດ/ຄົ້ນຫາ</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -87,8 +89,9 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-gray-500 text-xs">
                     <tr>
-                        <th class="text-left px-3 py-2 font-medium w-1/3">Key</th>
-                        <th class="text-left px-3 py-2 font-medium w-1/3">ຄ່າ (value)</th>
+                        <th class="text-left px-3 py-2 font-medium w-1/4">Key</th>
+                        <th class="text-left px-3 py-2 font-medium w-1/4">ລາວ (value)</th>
+                        <th class="text-left px-3 py-2 font-medium w-1/4">🇬🇧 English</th>
                         <th class="text-left px-3 py-2 font-medium">ໝາຍເຫດ</th>
                         <th class="text-center px-3 py-2 font-medium">ໃຊ້</th>
                         <th class="px-3 py-2"></th>
@@ -99,12 +102,13 @@
                         <tr wire:key="term-{{ $i }}">
                             <td class="px-3 py-1.5"><input type="text" wire:model="term.{{ $i }}.source" @disabled(! $editable) class="w-full rounded border-gray-200 text-sm font-mono" placeholder="status.draft" /></td>
                             <td class="px-3 py-1.5"><input type="text" wire:model="term.{{ $i }}.target" @disabled(! $editable) class="w-full rounded border-gray-200 text-sm" dir="auto" /></td>
+                            <td class="px-3 py-1.5"><input type="text" wire:model="term.{{ $i }}.target_en" @disabled(! $editable) class="w-full rounded border-gray-200 text-sm" dir="ltr" placeholder="English…" /></td>
                             <td class="px-3 py-1.5"><input type="text" wire:model="term.{{ $i }}.note" @disabled(! $editable) class="w-full rounded border-gray-200 text-sm" /></td>
                             <td class="px-3 py-1.5 text-center"><input type="checkbox" wire:model="term.{{ $i }}.is_active" @disabled(! $editable) class="rounded border-gray-300 text-sky-600" /></td>
                             <td class="px-3 py-1.5 text-right">@if ($editable)<button wire:click="remove('term', {{ $i }})" class="text-red-400 hover:text-red-600 text-xs">✕</button>@endif</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-3 py-6 text-center text-gray-400">ຍັງບໍ່ມີ term</td></tr>
+                        <tr><td colspan="6" class="px-3 py-6 text-center text-gray-400">ຍັງບໍ່ມີ term</td></tr>
                     @endforelse
                 </tbody>
             </table>

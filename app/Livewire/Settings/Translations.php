@@ -89,25 +89,25 @@ class Translations extends Component
         $rows = $base->orderBy('group')->orderBy('id')
             ->forPage($this->repPage, self::PER_PAGE)->get();
 
-        $this->rep = $rows->map(fn ($t) => ['id' => $t->id, 'group' => $t->group, 'source' => $t->source, 'target' => $t->target ?? '', 'note' => $t->note ?? '', 'is_active' => $t->is_active])->all();
+        $this->rep = $rows->map(fn ($t) => ['id' => $t->id, 'group' => $t->group, 'source' => $t->source, 'target' => $t->target ?? '', 'target_en' => $t->target_en ?? '', 'note' => $t->note ?? '', 'is_active' => $t->is_active])->all();
     }
 
     protected function loadTerms(): void
     {
         $this->term = Translation::where('type', 'term')->orderBy('id')->get()
-            ->map(fn ($t) => ['id' => $t->id, 'group' => $t->group, 'source' => $t->source, 'target' => $t->target ?? '', 'note' => $t->note ?? '', 'is_active' => $t->is_active])->all();
+            ->map(fn ($t) => ['id' => $t->id, 'group' => $t->group, 'source' => $t->source, 'target' => $t->target ?? '', 'target_en' => $t->target_en ?? '', 'note' => $t->note ?? '', 'is_active' => $t->is_active])->all();
     }
 
     public function addRep(): void
     {
         abort_unless(auth()->user()->can('settings.edit'), 403);
-        $this->rep[] = ['id' => null, 'group' => 'custom', 'source' => '', 'target' => '', 'note' => '', 'is_active' => true];
+        $this->rep[] = ['id' => null, 'group' => 'custom', 'source' => '', 'target' => '', 'target_en' => '', 'note' => '', 'is_active' => true];
     }
 
     public function addTerm(): void
     {
         abort_unless(auth()->user()->can('settings.edit'), 403);
-        $this->term[] = ['id' => null, 'group' => 'custom', 'source' => '', 'target' => '', 'note' => '', 'is_active' => true];
+        $this->term[] = ['id' => null, 'group' => 'custom', 'source' => '', 'target' => '', 'target_en' => '', 'note' => '', 'is_active' => true];
     }
 
     /** ດຶງ ຄຳ hard-coded ໃໝ່ ຈາກ ໜ້າ ຕ່າງໆ ເຂົ້າ catalogue (ບໍ່ ທັບ ຄຳ ແປ ເກົ່າ). */
@@ -149,6 +149,7 @@ class Translations extends Component
                     [
                         'group' => $r['group'] ?: 'custom',
                         'target' => $r['target'] ?? '',
+                        'target_en' => trim($r['target_en'] ?? '') ?: null,
                         'note' => $r['note'] ?: null,
                         'is_active' => (bool) ($r['is_active'] ?? true),
                         'updated_by' => auth()->id(),

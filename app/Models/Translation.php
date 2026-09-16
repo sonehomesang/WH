@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class Translation extends Model
 {
-    protected $fillable = ['type', 'group', 'source', 'target', 'note', 'is_active', 'updated_by'];
+    protected $fillable = ['type', 'group', 'source', 'target', 'target_en', 'note', 'is_active', 'updated_by'];
 
     protected $casts = ['is_active' => 'boolean'];
 
@@ -23,9 +23,17 @@ class Translation extends Model
 
     public const CACHE_TERM = 'translations.term';
 
+    /** UI languages the catalogue holds a column for. */
+    public const LOCALES = ['lo', 'en'];
+
     protected static function booted(): void
     {
         $bust = function () {
+            foreach (self::LOCALES as $l) {
+                Cache::forget(self::CACHE_REPLACE.'.'.$l);
+                Cache::forget(self::CACHE_TERM.'.'.$l);
+            }
+            // legacy un-suffixed keys (pre-i18n) — clear too, just in case.
             Cache::forget(self::CACHE_REPLACE);
             Cache::forget(self::CACHE_TERM);
         };
@@ -33,14 +41,28 @@ class Translation extends Model
         static::deleted($bust);
     }
 
-    /** @return array<string,string> source→target, active, longest source first. */
-    public static function replaceMap(): array
+    /** The catalogue column that backs a given UI locale. */
+    private static function columnFor(?string $locale): string
     {
-        return Cache::rememberForever(self::CACHE_REPLACE, function () {
+        return ($locale ?: app()->getLocale()) === 'en' ? 'target_en' : 'target';
+    }
+
+    /**
+     * @return array<string,string> source→translation for the given (or current)
+     * locale, active, longest source first. English (target_en) drives EN mode;
+     * Lao (target) drives everything else — untranslated rows are simply omitted
+     * so the original source text stays on the page (graceful fallback).
+     */
+    public static function replaceMap(?string $locale = null): array
+    {
+        $col = self::columnFor($locale);
+        $cacheKey = self::CACHE_REPLACE.'.'.($col === 'target_en' ? 'en' : 'lo');
+
+        return Cache::rememberForever($cacheKey, function () use ($col) {
             $pairs = static::query()->where('type', 'replace')->where('is_active', true)
-                ->whereNotNull('target')->where('source', '!=', '')
-                ->whereColumn('target', '!=', 'source')   // identity rows = no-op, skip
-                ->pluck('target', 'source')->all();
+                ->whereNotNull($col)->where($col, '!=', '')->where('source', '!=', '')
+                ->whereColumn($col, '!=', 'source')   // identity rows = no-op, skip
+                ->pluck($col, 'source')->all();
 
             $rows = [];
             foreach ($pairs as $src => $target) {
@@ -63,15 +85,23 @@ class Translation extends Model
         });
     }
 
-    /** @return array<string,string> key→value for active term overrides. */
-    public static function termMap(): array
+    /** @return array<string,string> key→value for active term overrides (per locale). */
+    public static function termMap(?string $locale = null): array
     {
-        return Cache::rememberForever(self::CACHE_TERM, fn () => static::query()
-            ->where('type', 'term')->where('is_active', true)->whereNotNull('target')
-            ->pluck('target', 'source')->all());
+        $col = self::columnFor($locale);
+        $cacheKey = self::CACHE_TERM.'.'.($col === 'target_en' ? 'en' : 'lo');
+
+        return Cache::rememberForever($cacheKey, fn () => static::query()
+            ->where('type', 'term')->where('is_active', true)
+            ->whereNotNull($col)->where($col, '!=', '')
+            ->pluck($col, 'source')->all());
     }
 
-    /** Resolve a term key to its override, falling back to the given default. */
+    /**
+     * Resolve a term key to its override for the current locale, falling back to
+     * the given default (which is the hard-coded Lao passed by @term) when the
+     * locale has no translation — so English mode degrades to Lao, never blank.
+     */
     public static function term(string $key, string $default = ''): string
     {
         return static::termMap()[$key] ?? $default;

@@ -7,6 +7,7 @@ use App\Models\AnsiItem;
 use App\Models\Department;
 use App\Models\InventoryItem;
 use App\Models\User;
+use App\Notifications\AnsiStageNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -115,6 +116,8 @@ class AnsiService
         $this->recordHistory($app, 'submit', $actor);
         $this->notify($app->hos_user_id, 'info', $app, 'needs your endorsement');
         $this->notify($app->originator_user_id, 'info', $app, 'submitted for endorsement');
+        $this->email($app, $app->hos_user_id, 'ລໍ ການ ຮັບຮອງ ຂອງ HoS/TL', actionNeeded: true);
+        $this->email($app, $app->originator_user_id, 'ສົ່ງ ຂໍ ຮັບຮອງ ແລ້ວ');
     }
 
     public function endorse(AnsiApplication $app, User $actor): void
@@ -126,6 +129,8 @@ class AnsiService
         $this->recordHistory($app, 'endorse', $actor);
         $this->notify($app->manager_user_id, 'info', $app, 'needs your approval');
         $this->notify($app->originator_user_id, 'success', $app, 'endorsed by HoS/TL');
+        $this->email($app, $app->manager_user_id, 'ລໍ ການ ອະນຸມັດ ຂອງ Manager', actionNeeded: true);
+        $this->email($app, $app->originator_user_id, 'HoS/TL ຮັບຮອງ ແລ້ວ');
     }
 
     public function approve(AnsiApplication $app, User $actor): void
@@ -138,6 +143,8 @@ class AnsiService
         $svc = app(NotificationService::class);
         $svc->notifyRole('warehouse_staff', 'info', 'ANSI '.$app->request_number.' approved - warehouse to process', 'Check duplicate, create item number, create PR.', route('ansi.show', $app));
         $this->notify($app->originator_user_id, 'success', $app, 'approved by Manager');
+        $this->emailRole($app, 'warehouse_staff', 'ອະນຸມັດ ແລ້ວ — ໃຫ້ ສາງ ດຳເນີນ ການ (ໃສ່ ເລກ ລາຍການ + PR)', actionNeeded: true);
+        $this->email($app, $app->originator_user_id, 'Manager ອະນຸມັດ ແລ້ວ');
     }
 
     /** Warehouse: record item numbers + PR, complete + closeout. */
@@ -171,6 +178,7 @@ class AnsiService
         $this->recordHistory($app, 'warehouse_done', $actor, $opts['warehouse_note'] ?? null);
         $this->notify($app->originator_user_id, 'success', $app,
             "completed - item number & PR done ({$created} new inventory item".($created === 1 ? '' : 's').')');
+        $this->email($app, $app->originator_user_id, 'ສຳເລັດ — ສາງ ໃສ່ ເລກ ລາຍການ + ສ້າງ ເຂົ້າ Inventory ແລ້ວ');
     }
 
     /**
@@ -228,6 +236,7 @@ class AnsiService
         ]);
         $this->recordHistory($app, 'reject', $actor, $reason);
         $this->notify($app->originator_user_id, 'error', $app, 'rejected at '.$stage);
+        $this->email($app, $app->originator_user_id, 'ຖືກ ຕີ ກັບ ທີ່ ຂັ້ນ '.$stage.' — ເຫດຜົນ: '.Str::limit($reason, 80));
     }
 
     public function cancel(AnsiApplication $app, User $actor, ?string $reason = null): void
@@ -243,6 +252,39 @@ class AnsiService
             return;
         }
         app(NotificationService::class)->notify($userId, $type, 'ANSI '.$app->request_number.' '.$what, Str::limit($app->summary_items ?? '', 80), route('ansi.show', $app));
+    }
+
+    /**
+     * Best-effort stage email to one user (optional — silently no-ops when SMTP
+     * is not configured or the user has no address, so it never blocks the flow).
+     * Mirrors the DisposalEndorsementRequest pattern; the in-app bell always fires.
+     */
+    private function email(AnsiApplication $app, ?int $userId, string $headline, bool $actionNeeded = false): void
+    {
+        if (! $userId) {
+            return;
+        }
+        $user = User::find($userId);
+        if (! $user || ! $user->email) {
+            return;
+        }
+        try {
+            $user->notify(new AnsiStageNotification($app, $headline, $actionNeeded));
+        } catch (\Throwable $e) {
+            // email down (SMTP not set) — do not break the workflow.
+        }
+    }
+
+    /** Best-effort stage email to every user holding a role (e.g. warehouse_staff). */
+    private function emailRole(AnsiApplication $app, string $role, string $headline, bool $actionNeeded = false): void
+    {
+        foreach (User::role($role)->whereNotNull('email')->get() as $user) {
+            try {
+                $user->notify(new AnsiStageNotification($app, $headline, $actionNeeded));
+            } catch (\Throwable $e) {
+                // email down — skip, keep the workflow moving.
+            }
+        }
     }
 
     private function recordHistory(AnsiApplication $app, string $action, User $actor, ?string $comment = null): void

@@ -102,6 +102,27 @@ test('a duplicate Material No. links to the existing item instead of erroring', 
     expect($b->items->first()->fresh()->created_inventory_id)->toBe($invId);
 });
 
+test('stage emails go to the next actor and the originator (best-effort, optional)', function () {
+    Illuminate\Support\Facades\Notification::fake();
+    $svc = app(AnsiService::class);
+    $app = draftFor($this->originator, $this->hos, $this->manager);
+
+    $svc->submit($app, $this->originator);
+    Illuminate\Support\Facades\Notification::assertSentTo($this->hos, App\Notifications\AnsiStageNotification::class);
+    Illuminate\Support\Facades\Notification::assertSentTo($this->originator, App\Notifications\AnsiStageNotification::class);
+
+    $svc->endorse($app, $this->hos);
+    Illuminate\Support\Facades\Notification::assertSentTo($this->manager, App\Notifications\AnsiStageNotification::class);
+
+    $svc->approve($app, $this->manager);
+    // warehouse-stage completion notifies the originator of the outcome
+    $svc->warehouseDone($app, $this->warehouse, ['item_numbers' => [$app->items->first()->id => 'MAT-MAIL']]);
+    Illuminate\Support\Facades\Notification::assertSentTo(
+        $this->originator, App\Notifications\AnsiStageNotification::class,
+        fn ($n) => str_contains($n->headline, 'ສຳເລັດ')
+    );
+});
+
 test('only the assigned HoS can endorse', function () {
     $svc = app(AnsiService::class);
     $app = draftFor($this->originator, $this->hos, $this->manager);

@@ -61,7 +61,9 @@ class Translation extends Model
         $col = self::columnFor($locale);
         $cacheKey = self::CACHE_REPLACE.'.'.($col === 'target_en' ? 'en' : 'lo');
 
-        return Cache::rememberForever($cacheKey, function () use ($col) {
+        $en = $col === 'target_en';
+
+        return Cache::rememberForever($cacheKey, function () use ($col, $en) {
             $pairs = static::query()->where('type', 'replace')->where('is_active', true)
                 ->whereNotNull($col)->where($col, '!=', '')->where('source', '!=', '')
                 ->whereColumn($col, '!=', 'source')   // identity rows = no-op, skip
@@ -72,13 +74,17 @@ class Translation extends Model
                 // Strip any HTML from the admin-entered target before it is injected
                 // into rendered pages — prevents stored XSS via the replace middleware.
                 $target = strip_tags((string) $target);
-                $rows[$src] = $target;
+                // English keys are NFC-normalised so a Lao source typed in one
+                // composition still matches a page rendered in another (the
+                // ໍ/tone-mark ordering that broke chip labels). Lao keys stay raw.
+                $key = $en ? self::nfc((string) $src) : (string) $src;
+                $rows[$key] = $target;
                 // Blade escapes display text (& → &amp;, < → &lt; …), so a source
                 // containing special characters (e.g. "Equipment & Tools") never
                 // matches the rendered HTML unless we also map its encoded form.
                 $encSrc = e((string) $src);
                 if ($encSrc !== (string) $src) {
-                    $rows[$encSrc] = e($target);
+                    $rows[$en ? self::nfc($encSrc) : $encSrc] = e($target);
                 }
             }
             // longest source first so phrases win over their sub-words
@@ -86,6 +92,12 @@ class Translation extends Model
 
             return $rows;
         });
+    }
+
+    /** Unicode NFC (composed) form — no-op if the intl extension is missing. */
+    private static function nfc(string $s): string
+    {
+        return class_exists(\Normalizer::class) ? (\Normalizer::normalize($s, \Normalizer::FORM_C) ?: $s) : $s;
     }
 
     /** @return array<string,string> key→value for active term overrides (per locale). */
@@ -182,7 +194,7 @@ class Translation extends Model
      */
     private static function swapExact(string $text, array $map): string
     {
-        $trimmed = trim($text);
+        $trimmed = self::nfc(trim($text));   // map keys are NFC in English mode
         if ($trimmed === '' || ! isset($map[$trimmed])) {
             return $text;
         }

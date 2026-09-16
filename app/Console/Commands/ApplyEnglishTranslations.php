@@ -29,13 +29,18 @@ class ApplyEnglishTranslations extends Command
                 }
                 // Keyed by SOURCE (the Lao string) — stable across environments,
                 // unlike row ids which the extractor assigns per-database.
+                // updateOrCreate so component-defined labels (not caught by
+                // translations:extract, which scans blades only) are created too.
                 foreach ($map as $source => $en) {
                     $en = trim((string) $en);
                     if ($en === '' || $source === '') {
                         continue;
                     }
-                    $applied += Translation::where('type', 'replace')->where('source', $source)
-                        ->update(['target_en' => $en]);
+                    Translation::updateOrCreate(
+                        ['type' => 'replace', 'source' => (string) $source],
+                        ['target_en' => $en, 'is_active' => true],
+                    );
+                    $applied++;
                 }
             }
             Translation::flushCache();   // bulk update() skips model events → bust caches by hand

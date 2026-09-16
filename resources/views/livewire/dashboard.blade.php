@@ -38,8 +38,8 @@
                 <div class="relative p-5 sm:p-6">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <h1 class="text-xl sm:text-2xl font-bold truncate">ສະບາຍດີ, {{ auth()->user()->display_name }} 👋</h1>
-                            <p class="text-xs sm:text-sm text-white/80 truncate">{{ auth()->user()->getRoleNames()->implode(', ') ?: '—' }}@if (auth()->user()->is_super_admin) · super_admin @endif · {{ now()->format('l, d M Y') }} · ພາບ ລວມ ຄັງ ສິນຄ້າ</p>
+                            <h1 class="text-xl sm:text-2xl font-bold truncate">{{ app()->getLocale() === 'en' ? 'Hello' : 'ສະບາຍດີ' }}, {{ auth()->user()->display_name }} 👋</h1>
+                            <p class="text-xs sm:text-sm text-white/80 truncate">{{ auth()->user()->getRoleNames()->implode(', ') ?: '—' }}@if (auth()->user()->is_super_admin) · super_admin @endif · {{ now()->format('l, d M Y') }} · {{ app()->getLocale() === 'en' ? 'Warehouse overview' : 'ພາບ ລວມ ຄັງ ສິນຄ້າ' }}</p>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0" data-noexport>
                             <button onclick="window.exportPdf('dash-capture','dashboard-{{ now()->format('Ymd-Hi') }}.pdf')" class="text-xs bg-white/15 border border-white/25 text-white rounded-md px-2.5 py-1.5 hover:bg-white/25" title="ສົ່ງອອກ PDF">📄 PDF</button>

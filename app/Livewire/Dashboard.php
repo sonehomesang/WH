@@ -61,7 +61,7 @@ class Dashboard extends Component
             $active = (clone $q)->whereIn('status', ['active', 'overdue'])->count();
             $overdue = (clone $q)->where('status', 'active')->whereDate('planned_return_date', '<', Carbon::today())->count();
             $k[] = ['key' => 'borrow', 'label' => 'ການຢືມ active', 'value' => $active, 'route' => 'borrow',
-                'tone' => $overdue > 0 ? 'red' : 'sky', 'hint' => $overdue > 0 ? "⏰ ເກີນກຳນົດ {$overdue}" : 'ບໍ່ມີເກີນກຳນົດ'];
+                'tone' => $overdue > 0 ? 'red' : 'sky', 'hint' => $overdue > 0 ? (app()->getLocale() === 'en' ? "⏰ {$overdue} overdue" : "⏰ ເກີນກຳນົດ {$overdue}") : 'ບໍ່ມີເກີນກຳນົດ'];
         }
 
         if ($u->can('request.view')) {

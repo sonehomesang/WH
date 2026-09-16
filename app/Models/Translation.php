@@ -26,19 +26,22 @@ class Translation extends Model
     /** UI languages the catalogue holds a column for. */
     public const LOCALES = ['lo', 'en'];
 
+    /** Drop every cached map — call after a bulk/query-builder write that skips model events. */
+    public static function flushCache(): void
+    {
+        foreach (self::LOCALES as $l) {
+            Cache::forget(self::CACHE_REPLACE.'.'.$l);
+            Cache::forget(self::CACHE_TERM.'.'.$l);
+        }
+        // legacy un-suffixed keys (pre-i18n) — clear too, just in case.
+        Cache::forget(self::CACHE_REPLACE);
+        Cache::forget(self::CACHE_TERM);
+    }
+
     protected static function booted(): void
     {
-        $bust = function () {
-            foreach (self::LOCALES as $l) {
-                Cache::forget(self::CACHE_REPLACE.'.'.$l);
-                Cache::forget(self::CACHE_TERM.'.'.$l);
-            }
-            // legacy un-suffixed keys (pre-i18n) — clear too, just in case.
-            Cache::forget(self::CACHE_REPLACE);
-            Cache::forget(self::CACHE_TERM);
-        };
-        static::saved($bust);
-        static::deleted($bust);
+        static::saved(fn () => self::flushCache());
+        static::deleted(fn () => self::flushCache());
     }
 
     /** The catalogue column that backs a given UI locale. */
@@ -127,6 +130,13 @@ class Translation extends Model
             return $html;
         }
 
+        // English is a TRANSLATION, not a wording fix: match whole text nodes /
+        // attribute values (exact, trimmed) rather than substrings. That way a
+        // partly-translated catalogue never corrupts a longer phrase — an
+        // untranslated node just stays Lao. Lao keeps the substring behaviour so
+        // existing wording overrides (fix a word anywhere) still work.
+        $exact = app()->getLocale() === 'en';
+
         // 1. Protect script/style/comment blocks.
         $stash = [];
         $html = preg_replace_callback(
@@ -152,15 +162,33 @@ class Translation extends Model
                 $out .= preg_replace_callback(
                     '/\b('.$attrs.')="([^"]*)"/i',
                     // encode any " a replacement target might introduce → no attribute breakout
-                    fn ($m) => $m[1].'="'.str_replace('"', '&quot;', strtr($m[2], $map)).'"',
+                    fn ($m) => $m[1].'="'.str_replace('"', '&quot;', $exact ? self::swapExact($m[2], $map) : strtr($m[2], $map)).'"',
                     $part
                 );
             } else {
-                $out .= strtr($part, $map);
+                $out .= $exact ? self::swapExact($part, $map) : strtr($part, $map);
             }
         }
 
         // 3. Restore protected blocks.
         return strtr($out, $stash);
+    }
+
+    /**
+     * Whole-value swap (English mode): replace the text only when its trimmed
+     * form is EXACTLY a catalogue source, preserving the original surrounding
+     * whitespace. No match → returned unchanged (stays Lao). This is what makes
+     * a partial English catalogue safe — it can never bleed into a longer phrase.
+     */
+    private static function swapExact(string $text, array $map): string
+    {
+        $trimmed = trim($text);
+        if ($trimmed === '' || ! isset($map[$trimmed])) {
+            return $text;
+        }
+        preg_match('/^\s*/', $text, $lead);
+        preg_match('/\s*$/', $text, $tail);
+
+        return $lead[0].$map[$trimmed].$tail[0];
     }
 }

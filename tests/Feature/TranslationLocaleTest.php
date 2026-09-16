@@ -29,6 +29,21 @@ test('applyReplacements swaps Lao for English only in en mode', function () {
     expect(Translation::applyReplacements('<button>ບັນທຶກ</button>'))->toContain('Save');
 });
 
+test('en exact-match never bleeds into a longer untranslated phrase', function () {
+    Translation::create([
+        'type' => 'replace', 'group' => 'custom',
+        'source' => 'ຜູ້ຢືມ', 'target' => 'ຜູ້ຢືມ', 'target_en' => 'Borrower', 'is_active' => true,
+    ]);
+
+    app()->setLocale('en');
+    // the whole node "ຜູ້ຢືມ" translates …
+    expect(Translation::applyReplacements('<td>ຜູ້ຢືມ</td>'))->toContain('Borrower');
+    // … but a longer node that merely CONTAINS it, and is not itself translated,
+    // stays fully Lao — no substring corruption (the whole point of exact match).
+    expect(Translation::applyReplacements('<p>ຜູ້ຢືມ ປັດຈຸບັນ</p>'))
+        ->toContain('ຜູ້ຢືມ ປັດຈຸບັນ')->not->toContain('Borrower');
+});
+
 test('an empty target_en falls back to the Lao source in en mode', function () {
     Translation::create([
         'type' => 'replace', 'group' => 'custom',

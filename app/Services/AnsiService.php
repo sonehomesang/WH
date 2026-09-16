@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\AnsiApplication;
+use App\Models\AnsiItem;
 use App\Models\Department;
+use App\Models\InventoryItem;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -143,11 +145,18 @@ class AnsiService
     {
         $this->assert($app->status === 'pending_warehouse', 'Not awaiting warehouse processing.');
 
-        DB::transaction(function () use ($app, $actor, $opts) {
+        $created = 0;
+        DB::transaction(function () use ($app, $actor, $opts, &$created) {
             foreach ($app->items as $it) {
                 $num = trim((string) ($opts['item_numbers'][$it->id] ?? ''));
                 if ($num !== '') {
                     $it->update(['item_number' => $num]);
+                }
+                // v2 hook: the warehouse-assigned item_number IS the new material
+                // number — mirror it into the WH Inventory master (SAP is the ERP
+                // of record; this keeps WH in sync). Idempotent + duplicate-safe.
+                if ($this->mirrorItemToInventory($it->fresh(), $app, $actor)) {
+                    $created++;
                 }
             }
             $app->update([
@@ -160,7 +169,52 @@ class AnsiService
             ]);
         });
         $this->recordHistory($app, 'warehouse_done', $actor, $opts['warehouse_note'] ?? null);
-        $this->notify($app->originator_user_id, 'success', $app, 'completed - item number & PR created');
+        $this->notify($app->originator_user_id, 'success', $app,
+            "completed - item number & PR done ({$created} new inventory item".($created === 1 ? '' : 's').')');
+    }
+
+    /**
+     * Mirror one approved ANSI item into the WH Inventory master. Returns true
+     * when a NEW InventoryItem was created (false when skipped or linked to an
+     * existing one). Safe to call repeatedly: `created_inventory_id` guards
+     * against re-creation, and a slug (= Material No.) collision links to the
+     * existing record instead of throwing a unique-constraint error.
+     */
+    private function mirrorItemToInventory(AnsiItem $it, AnsiApplication $app, User $actor): bool
+    {
+        $slug = trim((string) $it->item_number);
+        if ($slug === '' || $it->created_inventory_id) {
+            return false;
+        }
+
+        // A record may already exist under this Material No. (incl. soft-deleted,
+        // which still holds the unique slug) — link to it rather than duplicate.
+        $existing = InventoryItem::withTrashed()->where('slug', $slug)->first();
+        if ($existing) {
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+            $it->update(['created_inventory_id' => $existing->id]);
+
+            return false;
+        }
+
+        $name = Str::limit(trim((string) $it->description), 250, '');
+        $inv = InventoryItem::create([
+            'slug' => $slug,
+            'name' => $name !== '' ? $name : $slug,
+            'description' => $it->description,
+            'quantity' => 0,                       // master created empty; stock arrives on receiving
+            'min_quantity' => (int) ($it->min_qty ?? 0),
+            'unit' => $it->unit,
+            'department_id' => $app->owner_dept_id,
+            'status' => 'available',
+            'is_active' => true,
+            'created_by' => $actor->id,
+        ]);
+        $it->update(['created_inventory_id' => $inv->id]);
+
+        return true;
     }
 
     public function reject(AnsiApplication $app, User $actor, string $stage, string $reason): void

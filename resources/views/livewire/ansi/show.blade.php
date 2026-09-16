@@ -126,7 +126,15 @@
                                 <td class="px-2 py-2">{{ $it->hazardous ? '⚠️ Yes' : 'No' }}</td>
                                 <td class="px-2 py-2">{{ $it->criticality ? 'Yes' : 'No' }}</td>
                                 <td class="px-2 py-2">{{ $it->special_storage }}</td>
-                                @if ($record->status === 'completed')<td class="px-2 py-2 font-mono text-emerald-700">{{ $it->item_number ?: '—' }}</td>@endif
+                                @if ($record->status === 'completed')
+                                    <td class="px-2 py-2 font-mono text-emerald-700 whitespace-nowrap">
+                                        @if ($it->created_inventory_id && $it->item_number)
+                                            <a href="{{ route('inventory', ['search' => $it->item_number]) }}" wire:navigate class="inline-flex items-center gap-1 text-sky-700 hover:text-sky-900 hover:underline" title="ເປີດ ໃນ Inventory">{{ $it->item_number }} <span class="text-emerald-600">↗</span></a>
+                                        @else
+                                            {{ $it->item_number ?: '—' }}
+                                        @endif
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>

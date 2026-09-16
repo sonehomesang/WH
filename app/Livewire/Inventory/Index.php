@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -30,6 +31,7 @@ class Index extends Component
 
     public const MAX_PHOTOS = 6;
 
+    #[Url]                                  // deep-linkable (e.g. ANSI item → /inventory?search=<Material No.>)
     public string $search = '';
 
     public string $statusFilter = '';

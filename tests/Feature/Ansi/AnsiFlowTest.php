@@ -57,6 +57,51 @@ test('the full approval chain runs Originator -> HoS -> Manager -> Warehouse -> 
     expect($app->items->first()->item_number)->toBe('INV-0001');
 });
 
+test('warehouse completion mirrors each item into the Inventory master (v2 hook)', function () {
+    $svc = app(AnsiService::class);
+    $app = draftFor($this->originator, $this->hos, $this->manager);
+    $svc->submit($app, $this->originator);
+    $svc->endorse($app, $this->hos);
+    $svc->approve($app, $this->manager);
+
+    $itemId = $app->items->first()->id;
+    $svc->warehouseDone($app, $this->warehouse, [
+        'item_numbers' => [$itemId => 'MAT-9001'], 'pr_number' => 'PR-1',
+    ]);
+
+    $inv = App\Models\InventoryItem::where('slug', 'MAT-9001')->first();
+    expect($inv)->not->toBeNull();
+    expect($inv->name)->toBe('CONTACT SOCKET 10A');   // derived from the ANSI description
+    expect($inv->quantity)->toBe(0);                  // master created empty
+    expect($inv->unit)->toBe('ea');
+    expect($inv->department_id)->toBe($app->owner_dept_id);
+    expect($app->items->first()->fresh()->created_inventory_id)->toBe($inv->id);
+});
+
+test('a duplicate Material No. links to the existing item instead of erroring', function () {
+    $svc = app(AnsiService::class);
+
+    // First application creates MAT-DUP in Inventory.
+    $a = draftFor($this->originator, $this->hos, $this->manager);
+    $svc->submit($a, $this->originator);
+    $svc->endorse($a, $this->hos);
+    $svc->approve($a, $this->manager);
+    $svc->warehouseDone($a, $this->warehouse, ['item_numbers' => [$a->items->first()->id => 'MAT-DUP']]);
+
+    // Second application reuses the same Material No.
+    $b = draftFor($this->originator, $this->hos, $this->manager);
+    $svc->submit($b, $this->originator);
+    $svc->endorse($b, $this->hos);
+    $svc->approve($b, $this->manager);
+    $svc->warehouseDone($b, $this->warehouse, ['item_numbers' => [$b->items->first()->id => 'MAT-DUP']]);
+
+    // Only ONE inventory row exists, and both ANSI items point at it.
+    expect(App\Models\InventoryItem::where('slug', 'MAT-DUP')->count())->toBe(1);
+    $invId = App\Models\InventoryItem::where('slug', 'MAT-DUP')->value('id');
+    expect($a->items->first()->fresh()->created_inventory_id)->toBe($invId);
+    expect($b->items->first()->fresh()->created_inventory_id)->toBe($invId);
+});
+
 test('only the assigned HoS can endorse', function () {
     $svc = app(AnsiService::class);
     $app = draftFor($this->originator, $this->hos, $this->manager);

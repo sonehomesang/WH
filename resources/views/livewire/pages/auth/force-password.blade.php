@@ -33,6 +33,7 @@ new #[Layout('layouts.guest')] class extends Component
         auth()->user()->forceFill([
             'password' => Hash::make($this->password),
             'must_change_password' => false,
+            'local_password_set_at' => now(),   // a usable local password now exists
         ])->save();
 
         Session::flash('status', 'ຕັ້ງ ລະຫັດຜ່ານ ໃໝ່ ສຳເລັດ ✓');

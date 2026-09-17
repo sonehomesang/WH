@@ -8,6 +8,7 @@ use App\Livewire\Equipment\Categories;
 use App\Livewire\Equipment\InspectionTemplates;
 use App\Livewire\Equipment\MaintenanceTemplates;
 use App\Livewire\Inventory\Index;
+use App\Livewire\Settings\Access;
 use App\Livewire\Settings\Audit;
 use App\Livewire\Settings\Backup;
 use App\Livewire\Settings\ClearTestData;
@@ -518,6 +519,10 @@ Route::get('settings/email', Email::class)
 Route::get('settings/ldap', Ldap::class)
     ->middleware(['auth', 'verified'])
     ->name('settings.ldap');
+
+Route::get('settings/access', Access::class)
+    ->middleware(['auth', 'verified'])
+    ->name('settings.access');
 
 Route::get('settings/notification-log', NotificationLog::class)
     ->middleware(['auth', 'verified'])

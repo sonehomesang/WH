@@ -57,6 +57,7 @@ new #[Layout('layouts.guest')] class extends Component
                     // ຜູ້ໃຊ້ ຕັ້ງ ລະຫັດ ເອງ ຜ່ານ ລິ້ງ ແລ້ວ → ບໍ່ ຕ້ອງ ບັງຄັບ ປ່ຽນ ອີກ (ກັນ ປ່ຽນ ຊ້ຳ 2 ຮອບ
                     // ສຳລັບ ບັນຊີ ທີ່ ເຄີຍ ໄດ້ ລະຫັດ ຊົ່ວຄາວ ຈາກ users:temp-password).
                     'must_change_password' => false,
+                    'local_password_set_at' => now(),   // a usable local password now exists
                 ])->save();
 
                 event(new PasswordReset($user));

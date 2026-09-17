@@ -13,6 +13,7 @@
         ['label' => 'Reports', 'perm' => 'reports.view', 'route' => 'settings.reports'],
         ['label' => 'Notifications', 'perm' => 'settings.view', 'route' => 'settings.notifications'],
         ['label' => 'Email (SMTP)', 'perm' => 'settings.view', 'route' => 'settings.email'],
+        ['label' => 'Access &amp; Auth', 'perm' => 'settings.view', 'route' => 'settings.access', 'super' => true],
         ['label' => 'Active Directory', 'perm' => 'settings.view', 'route' => 'settings.ldap'],
         ['label' => 'ແປ/ຄຳສັບ', 'perm' => 'settings.view', 'route' => 'settings.translations'],
         ['label' => 'Backup', 'perm' => 'settings.view', 'route' => 'settings.backup'],

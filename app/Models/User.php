@@ -81,6 +81,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'ldap_imported_at' => 'datetime',
+            'local_password_set_at' => 'datetime',
             'is_pre_created' => 'boolean',
             'is_super_admin' => 'boolean',
             'must_change_password' => 'boolean',

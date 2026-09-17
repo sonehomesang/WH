@@ -66,10 +66,41 @@ class LdapDirectory
         ];
     }
 
-    /** Is signing in with the AD password switched on? */
+    // ── Auth Mode ────────────────────────────────────────────────────────
+    // The single super-admin-controlled switch that decides how WH checks a
+    // login. Local password is always the foundation (break-glass + local
+    // accounts work in every mode); AD is an overlay toggled through here.
+    public const MODE_LOCAL = 'local_only';       // ignore AD — everyone local
+
+    public const MODE_AD_STRICT = 'ad_strict';    // domain users must bind AD, no fallback
+
+    public const MODE_AD_FALLBACK = 'ad_fallback'; // bind AD; DC unreachable → local (Phase B)
+
+    public const MODES = [self::MODE_LOCAL, self::MODE_AD_STRICT, self::MODE_AD_FALLBACK];
+
+    /**
+     * Active auth mode. Reads Setting('auth').mode; if unset (legacy installs),
+     * derives it from the old ldap.enabled + login_with_ad pair so behaviour is
+     * unchanged until an admin picks a mode on Settings › Access.
+     */
+    public function mode(): string
+    {
+        $m = Setting::get('auth')['mode'] ?? null;
+        if (in_array($m, self::MODES, true)) {
+            return $m;
+        }
+
+        if ($this->isEnabled() && (bool) ($this->settings()['login_with_ad'] ?? false)) {
+            return self::MODE_AD_STRICT;
+        }
+
+        return self::MODE_LOCAL;
+    }
+
+    /** Is signing in with the AD password switched on? (ad_strict or ad_fallback) */
     public function loginEnabled(): bool
     {
-        return $this->isEnabled() && (bool) ($this->settings()['login_with_ad'] ?? false);
+        return in_array($this->mode(), [self::MODE_AD_STRICT, self::MODE_AD_FALLBACK], true);
     }
 
     /**

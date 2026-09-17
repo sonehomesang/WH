@@ -336,7 +336,7 @@
                             <label class="block text-xs font-medium text-gray-500 mb-1">ສະຖານະ ໃໝ່</label>
                             <select wire:model="resetStatus" class="w-full rounded-lg border-gray-300 text-sm">
                                 @foreach (['draft' => 'draft', 'submitted' => 'submitted (ລໍ ຮັບ)', 'accepted' => 'accepted (ຮັບ ແລ້ວ)', 'stored' => 'stored (ເກັບ ໄວ້)', 'needs_fix' => 'needs_fix (ຕ້ອງ ແກ້)', 'claimed' => 'claimed (ເອົາ ຄືນ ແລ້ວ)', 'cancelled' => 'cancelled (ຍົກເລີກ)', 'disposal' => 'disposal (ກຳລັງ ຈຳໜ່າຍ)', 'disposed' => 'disposed (ຈຳໜ່າຍ ແລ້ວ)'] as $sv => $sl)
-                                    <option value="{{ $sv }}">{{ $sl }}</option>
+                                    <option value="{{ $sv }}">{{ app()->getLocale() === 'en' ? preg_replace('/\s*\(.*\)$/u', '', $sl) : $sl }}</option>
                                 @endforeach
                             </select>
                             @error('resetStatus')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
@@ -391,7 +391,7 @@
                                                             <input type="file" x-on:change="upload($event, 'cam')" accept="image/*" capture="environment" multiple class="hidden" />
                                                         </label>
                                                         <label class="flex-1 cursor-pointer inline-flex items-center justify-center gap-1 text-xs font-medium text-sky-700 bg-sky-50 border border-sky-200 rounded-lg px-2 py-1.5 hover:bg-sky-100 transition">
-                                                            🖼 <span class="hidden lg:inline">ຄັງ</span>
+                                                            🖼 <span class="hidden lg:inline">{{ app()->getLocale() === 'en' ? 'Gallery' : 'ຄັງ' }}</span>
                                                             <input type="file" x-on:change="upload($event, 'gal')" accept="image/*" multiple class="hidden" />
                                                         </label>
                                                     </div>
@@ -482,7 +482,7 @@
                             <div><label class="block text-xs font-medium text-gray-500 mb-1">ບ່ອນເກັບ (ໃບ)</label><input type="text" wire:model="ef.storage_location" class="w-full rounded-lg border-gray-300 text-sm" /></div>
                             <div><label class="block text-xs font-medium text-gray-500 mb-1">ປ້າຍຊັ້ນວາງ</label><input type="text" wire:model="ef.storage_shelf_label" class="w-full rounded-lg border-gray-300 text-sm" /></div>
                             <div class="sm:col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1">ເຫດຜົນ</label><textarea wire:model="ef.deposit_reason" rows="2" class="w-full rounded-lg border-gray-300 text-sm"></textarea></div>
-                            <div class="sm:col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1">ຄຳແນະນຳ warehouse</label><textarea wire:model="ef.warehouse_instructions" rows="2" class="w-full rounded-lg border-gray-300 text-sm"></textarea></div>
+                            <div class="sm:col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1">{{ app()->getLocale() === 'en' ? 'Warehouse recommendation' : 'ຄຳແນະນຳ warehouse' }}</label><textarea wire:model="ef.warehouse_instructions" rows="2" class="w-full rounded-lg border-gray-300 text-sm"></textarea></div>
                             <div class="sm:col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1">ໝາຍເຫດ</label><textarea wire:model="ef.remark" rows="2" class="w-full rounded-lg border-gray-300 text-sm"></textarea></div>
                         </div>
                     </div>

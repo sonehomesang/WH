@@ -194,7 +194,7 @@
                                             <input type="file" x-on:change="upload($event, 'cam')" accept="image/*" capture="environment" multiple class="hidden" />
                                         </label>
                                         <label class="flex-1 cursor-pointer inline-flex items-center justify-center gap-1 text-xs font-medium text-sky-700 bg-sky-50 border border-sky-200 rounded-lg px-2 py-1.5 hover:bg-sky-100 transition">
-                                            🖼 <span class="hidden lg:inline">ຄັງ</span>
+                                            🖼 <span class="hidden lg:inline">{{ app()->getLocale() === 'en' ? 'Gallery' : 'ຄັງ' }}</span>
                                             <input type="file" x-on:change="upload($event, 'gal')" accept="image/*" multiple class="hidden" />
                                         </label>
                                     </div>

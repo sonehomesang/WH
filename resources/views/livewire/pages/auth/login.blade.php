@@ -38,10 +38,10 @@ new #[Layout('layouts.guest')] class extends Component
     @endif
 
     <form wire:submit="login" class="space-y-4">
-        <!-- Email Address -->
+        <!-- Username or email -->
         <div>
-            <label for="email" class="block text-sm font-medium text-gray-600 mb-1">ອີເມວ</label>
-            <x-text-input wire:model="form.email" id="email" class="block w-full" type="email" name="email" required autofocus autocomplete="username" placeholder="you@example.com" />
+            <label for="email" class="block text-sm font-medium text-gray-600 mb-1">{{ app()->getLocale() === 'en' ? 'Username or email' : 'ຊື່ຜູ້ໃຊ້ ຫຼື ອີເມວ' }}</label>
+            <x-text-input wire:model="form.email" id="email" class="block w-full" type="text" name="email" required autofocus autocomplete="username" placeholder="{{ app()->getLocale() === 'en' ? 'username or you@example.com' : 'username ຫຼື you@example.com' }}" />
             <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
         </div>
 

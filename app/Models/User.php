@@ -41,6 +41,7 @@ class User extends Authenticatable
         // 'is_super_admin' is intentionally NOT mass-assignable — it drives the
         // Gate::before bypass. Set it explicitly via forceFill() (see SuperAdminSeeder).
         'must_change_password',
+        'local_password_set_at',
         'dashboard_prefs',
     ];
 

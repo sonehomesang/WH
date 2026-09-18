@@ -151,16 +151,25 @@
                         @error('display_name')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm text-gray-600 mb-1">Email <span class="text-red-500">*</span></label>
-                        <input type="email" wire:model="email" class="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm" />
+                        <label class="block text-sm text-gray-600 mb-1">Username <span class="text-gray-400 font-normal">(ໃຊ້ login · ຫຼື email ຢ່າງໜ້ອຍ 1)</span></label>
+                        <input type="text" wire:model="username" autocomplete="off" placeholder="ຊື່ຜູ້ໃຊ້ ສຳລັບ login" class="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm" />
+                        @error('username')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Email <span class="text-gray-400 font-normal">(ບໍ່ ບັງຄັບ)</span></label>
+                        <input type="email" wire:model="email" placeholder="ວ່າງ ໄດ້ ຖ້າ ບໍ່ ມີ" class="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm" />
                         @error('email')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                     </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm text-gray-600 mb-1">Password
+                            @if ($editingId)<span class="text-gray-400 font-normal">(ວ່າງ = ບໍ່ ປ່ຽນ)</span>
+                            @else<span class="text-gray-400 font-normal">(admin ຕັ້ງ — ຜູ້ໃຊ້ ຕ້ອງ ປ່ຽນ ຕອນ login ຄັ້ງ ທຳອິດ)</span>@endif
+                        </label>
+                        <input type="text" wire:model="password" autocomplete="off" placeholder="ຕັ້ງ password ໃຫ້ ຜູ້ໃຊ້ (prefill ຈາກ Default Password)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm font-mono" />
+                        @error('password')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                    </div>
                     <div class="md:col-span-2 text-xs text-gray-500 bg-sky-50 border border-sky-100 rounded-md px-3 py-2">
-                        @if ($editingId)
-                            ການ ຕັ້ງ ລະຫັດ ເຮັດ ໂດຍ ຜູ້ໃຊ້ ເອງ ຜ່ານ ລິ້ງ — ກົດ ປຸ່ມ 🔑 ໃນ ຕາຕະລາງ ເພື່ອ ສ້າງ/ສົ່ງ ລິ້ງ ໃໝ່.
-                        @else
-                            ບໍ່ ຕ້ອງ ຕັ້ງ ລະຫັດ — ຫຼັງ ບັນທຶກ, ລະບົບ ຈະ ສ້າງ <b>ລິ້ງ ຕັ້ງ ລະຫັດ</b> (ໝົດ ອາຍຸ 60 ນາທີ) ໃຫ້ ຜູ້ໃຊ້ ຕັ້ງ ເອງ + ສົ່ງ ອີເມລ.
-                        @endif
+                        <b>ຕັ້ງ ລະຫັດ 2 ວິທີ:</b> ① admin ພິມ password ຂ້າງເທິງ (prefill ຈາກ Default Password) → ບອກ ຜູ້ໃຊ້ ເອງ, ຜູ້ໃຊ້ ປ່ຽນ ຕອນ login ຄັ້ງ ທຳອິດ · ② ຫຼື ໃສ່ email + ວ່າງ password → ລະບົບ ສ້າງ <b>ລິ້ງ ຕັ້ງ ລະຫັດ</b> ໃຫ້.
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Role <span class="text-red-500">*</span></label>

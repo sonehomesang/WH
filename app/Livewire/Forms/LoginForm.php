@@ -14,7 +14,9 @@ use Livewire\Form;
 
 class LoginForm extends Form
 {
-    #[Validate('required|string|email')]
+    // Login identifier — a username OR an email (staff without email sign in by
+    // username). Kept as `$email` so the blade binding and error keys are stable.
+    #[Validate('required|string|max:256')]
     public string $email = '';
 
     #[Validate('required|string')]
@@ -33,7 +35,9 @@ class LoginForm extends Form
         $this->ensureIsNotRateLimited();
 
         $ldap = app(LdapDirectory::class);
-        $user = User::where('email', Str::lower(trim($this->email)))->first();
+        // Resolve by email OR username (case-insensitive) — one identifier field.
+        $id = Str::lower(trim($this->email));
+        $user = User::where('email', $id)->orWhere('username', $id)->first();
 
         if ($ldap->loginEnabled() && $user && $user->auth_provider === 'domain') {
             // Domain account → verify the typed password against AD by binding as
@@ -57,8 +61,9 @@ class LoginForm extends Form
             }
 
             Auth::login($user, $this->remember);
-        } elseif (! Auth::attempt($this->only(['email', 'password']), $this->remember)) {
-            // password accounts (e.g. the break-glass admin) authenticate locally
+        } elseif (! $user || ! Auth::attempt(['id' => $user->id, 'password' => $this->password], $this->remember)) {
+            // local accounts (break-glass admin, username users, domain users in
+            // local_only mode) authenticate by their resolved id + local password
             $this->registerFailure();
 
             throw ValidationException::withMessages([

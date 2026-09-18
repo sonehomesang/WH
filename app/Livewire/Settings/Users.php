@@ -4,6 +4,7 @@ namespace App\Livewire\Settings;
 
 use App\Models\Department;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
@@ -35,6 +36,13 @@ class Users extends Component
     public string $display_name = '';
 
     public string $email = '';
+
+    public string $username = '';
+
+    // Admin-set initial password (optional). When given, the account is usable
+    // at once and is forced to change on first login. Prefilled from the
+    // configurable Default Password (Settings › Access).
+    public string $password = '';
 
     public string $role = '';
 
@@ -126,7 +134,22 @@ class Users extends Component
     public function newUser(): void
     {
         $this->resetForm();
+        $this->password = self::defaultPassword();   // prefill from Settings › Access
         $this->showModal = true;
+    }
+
+    /** The configurable default password for new accounts (decrypted, admin-set). */
+    public static function defaultPassword(): string
+    {
+        $enc = Setting::get('auth')['default_password_enc'] ?? null;
+        if (! $enc) {
+            return '';
+        }
+        try {
+            return \Illuminate\Support\Facades\Crypt::decryptString($enc);
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     public function editUser(int $id): void
@@ -134,7 +157,9 @@ class Users extends Component
         $user = User::with('roles')->findOrFail($id);
         $this->editingId = $user->id;
         $this->display_name = $user->display_name;
-        $this->email = $user->email;
+        $this->email = $user->email ?? '';
+        $this->username = $user->username ?? '';
+        $this->password = '';   // blank = keep current; typing a value resets it
         $this->role = $user->roles->first()?->name ?? '';
         $this->unit_id = $user->unit_id;
         $this->department_id = $user->department_id;
@@ -160,26 +185,53 @@ class Users extends Component
         // only a super_admin may grant the super_admin role (it carries every permission)
         abort_unless(auth()->user()->is_super_admin || $this->role !== 'super_admin', 403);
 
+        // A new account needs a way in: either an email (→ set-password link) or an
+        // admin-typed password. Existing accounts leave password blank to keep it.
+        $needsPassword = ! $this->editingId && trim($this->email) === '';
+
         $data = $this->validate([
             'display_name' => ['required', 'string', 'max:256'],
-            'email' => ['required', 'email', 'max:256', Rule::unique('users', 'email')->ignore($this->editingId)],
-            // ບໍ່ ມີ ຊ່ອງ password — ຜູ້ໃຊ້ ຕັ້ງ ເອງ ຜ່ານ ລິ້ງ (ບໍ່ ມີ ໃຜ ຮູ້ ລະຫັດ).
+            // At least one identifier — username OR email. Username signs in when
+            // there is no email; both are unique.
+            'username' => ['required_without:email', 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_.\-]+$/', Rule::unique('users', 'username')->ignore($this->editingId)],
+            'email' => ['required_without:username', 'nullable', 'email', 'max:256', Rule::unique('users', 'email')->ignore($this->editingId)],
+            // Admin-set password (optional; forces change on first login).
+            'password' => [$needsPassword ? 'required' : 'nullable', 'string', 'min:8'],
             'role' => ['required', 'exists:roles,name'],
             'unit_id' => ['nullable', 'exists:units,id'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'supplier_id' => [$this->role === 'supplier' ? 'required' : 'nullable', 'exists:suppliers,id'],
             'status' => ['required', 'in:active,pending,locked'],
-        ], [], ['supplier_id' => 'Supplier']);
+        ], [
+            'username.regex' => 'ຊື່ຜູ້ໃຊ້ ໃຊ້ ໄດ້ ພຽງ a-z, 0-9, _ . -',
+            'username.required_without' => 'ໃສ່ username ຫຼື email ຢ່າງ ໜ້ອຍ 1.',
+            'email.required_without' => 'ໃສ່ email ຫຼື username ຢ່າງ ໜ້ອຍ 1.',
+            'password.required' => 'ໃສ່ password (ບໍ່ ມີ email → ຕ້ອງ ຕັ້ງ password ໃຫ້).',
+            'password.min' => 'password ຢ່າງ ໜ້ອຍ 8 ຕົວ.',
+        ], ['supplier_id' => 'Supplier']);
 
         $attrs = [
             'display_name' => $data['display_name'],
-            'email' => $data['email'],
+            'username' => Str::lower($data['username']),   // identifier — matched lower-cased at login
+            'email' => $data['email'] ?: null,             // optional now
             'unit_id' => $data['unit_id'] ?: null,
             'department_id' => $data['department_id'] ?: null,
             // supplier_id ສະເພາະ role=supplier; role ອື່ນ → null (ກັນ scope ຄ້າງ)
             'supplier_id' => $this->role === 'supplier' ? ($data['supplier_id'] ?: null) : null,
             'status' => $data['status'],
         ];
+
+        // An admin-typed password makes the account usable now + forces a change
+        // on first login (must_change_password middleware).
+        $adminSetPassword = trim($data['password'] ?? '') !== '';
+        if ($adminSetPassword) {
+            $attrs += [
+                'password' => bcrypt($data['password']),
+                'auth_provider' => 'password',
+                'must_change_password' => true,
+                'local_password_set_at' => now(),
+            ];
+        }
 
         $isNew = ! $this->editingId;
         $oldStatus = null;
@@ -190,11 +242,12 @@ class Users extends Component
             $user->fill($attrs);
             $user->save();
         } else {
-            // ລະຫັດ ສຸ່ມ ທີ່ ໃຊ້ login ບໍ່ ໄດ້ — ຜູ້ໃຊ້ ຕັ້ງ ເອງ ຜ່ານ ລິ້ງ.
-            $user = User::create($attrs + [
+            // No admin password → random placeholder; the user sets their own via
+            // the email set-password link (issued below when an email exists).
+            $user = User::create($attrs + ($adminSetPassword ? [] : [
                 'password' => bcrypt(Str::random(40)),
                 'auth_provider' => 'password',
-            ]);
+            ]));
         }
 
         $user->syncRoles([$this->role]);
@@ -233,8 +286,8 @@ class Users extends Component
         $this->showModal = false;
         $this->dispatch('saved');
 
-        // ບັນຊີ ໃໝ່ → ສ້າງ ລິ້ງ ຕັ້ງ ລະຫັດ + ສົ່ງ ອີເມລ (ຖ້າ SMTP ພ້ອມ).
-        if ($isNew && config('features.local_auth')) {
+        // ບັນຊີ ໃໝ່ ທີ່ admin ບໍ່ ໄດ້ ຕັ້ງ password + ມີ email → ສ້າງ ລິ້ງ ຕັ້ງ ລະຫັດ.
+        if ($isNew && ! $adminSetPassword && $user->email && config('features.local_auth')) {
             $this->issueSetPasswordLink($user);
         }
     }
@@ -352,6 +405,8 @@ class Users extends Component
         $this->editingId = null;
         $this->display_name = '';
         $this->email = '';
+        $this->username = '';
+        $this->password = '';
         $this->role = '';
         $this->unit_id = null;
         $this->department_id = null;

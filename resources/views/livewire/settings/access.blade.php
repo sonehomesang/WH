@@ -87,6 +87,24 @@
             </div>
         </div>
 
+        {{-- ── Default password for new accounts ─────────────────── --}}
+        <div class="bg-white border border-gray-100 rounded-lg p-5">
+            <div class="flex items-center justify-between gap-2 mb-1">
+                <h3 class="font-medium text-gray-800">🔑 Default password (ບັນຊີ ໃໝ່)</h3>
+                @if ($defaultPassword !== '')
+                    <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">✓ ຕັ້ງ ໄວ້ ແລ້ວ</span>
+                @else
+                    <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">ຍັງ ບໍ່ ຕັ້ງ</span>
+                @endif
+            </div>
+            <p class="text-xs text-gray-500 mb-3">ຄ່າ ນີ້ prefill ຊ່ອງ password ຕອນ admin ສ້າງ user ໃໝ່ ຢູ່ ໜ້າ Users. ເກັບ ແບບ <b>encrypted</b> (ບໍ່ ຝັງ ໃນ code) · ຜູ້ໃຊ້ ຖືກ ບັງຄັບ ປ່ຽນ ຕອນ login ຄັ້ງ ທຳອິດ.</p>
+            <div class="flex gap-2 max-w-md">
+                <input type="text" wire:model="defaultPassword" placeholder="≥ 8 ຕົວ" class="flex-1 rounded-lg border-gray-300 text-sm font-mono" />
+                <button type="button" wire:click="saveDefaultPassword" class="h-9 px-4 rounded-lg bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700">ບັນທຶກ</button>
+            </div>
+            @error('defaultPassword')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
+        </div>
+
         {{-- ── Provisioning ──────────────────────────────────────── --}}
         <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
             <div class="flex items-center justify-between gap-2">

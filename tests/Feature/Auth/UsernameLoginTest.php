@@ -5,7 +5,6 @@ use App\Livewire\Settings\Users;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Livewire\Volt\Volt;
@@ -81,28 +80,45 @@ test('a wrong password is rejected', function () {
     $this->assertGuest();
 });
 
-test('default password saves encrypted and reads back decrypted', function () {
+test('no default password is stored anywhere', function () {
+    // The auth setting must never carry a recoverable default password.
     $this->actingAs(User::factory()->create(['is_super_admin' => true, 'auth_provider' => 'password', 'status' => 'active']));
-
-    Livewire::test(Access::class)
-        ->set('defaultPassword', 'Default-8888')
-        ->call('saveDefaultPassword')
-        ->assertHasNoErrors();
-
-    $enc = Setting::get('auth')['default_password_enc'];
-    expect($enc)->not->toBe('Default-8888')                       // stored encrypted
-        ->and(Crypt::decryptString($enc))->toBe('Default-8888')
-        ->and(Users::defaultPassword())->toBe('Default-8888');
-});
-
-test('changing the auth mode keeps the default password', function () {
-    $this->actingAs(User::factory()->create(['is_super_admin' => true, 'auth_provider' => 'password', 'status' => 'active']));
-    Setting::put('auth', ['default_password_enc' => Crypt::encryptString('keepme')]);
-
     Livewire::test(Access::class)->call('setMode', 'ad_strict');
 
-    expect(Users::defaultPassword())->toBe('keepme')
-        ->and(Setting::get('auth')['mode'])->toBe('ad_strict');
+    expect(Setting::get('auth'))->not->toHaveKey('default_password_enc')
+        ->and(Setting::get('auth'))->not->toHaveKey('default_password');
+});
+
+test('generate fills a strong random password (never persisted)', function () {
+    $this->actingAs(User::factory()->create(['is_super_admin' => true, 'auth_provider' => 'password', 'status' => 'active']));
+
+    $comp = Livewire::test(Users::class)->call('newUser')->call('generatePassword');
+    expect(strlen((string) $comp->get('password')))->toBeGreaterThanOrEqual(12);
+});
+
+test('admin:reset-password sets a one-way hash via hidden prompts', function () {
+    $u = User::factory()->create([
+        'username' => 'boss', 'email' => null, 'is_super_admin' => true,
+        'status' => 'active', 'password' => bcrypt('old-password'),
+    ]);
+
+    $this->artisan('admin:reset-password', ['identifier' => 'boss'])
+        ->expectsQuestion('New password (hidden, min 10 chars)', 'Brand-New-Pass-1')
+        ->expectsQuestion('Confirm new password', 'Brand-New-Pass-1')
+        ->assertExitCode(0);
+
+    expect(Hash::check('Brand-New-Pass-1', $u->refresh()->password))->toBeTrue()
+        ->and($u->must_change_password)->toBeFalse();
+});
+
+test('admin:reset-password rejects a short password without changing anything', function () {
+    $u = User::factory()->create(['username' => 'boss', 'email' => null, 'password' => bcrypt('old-password')]);
+
+    $this->artisan('admin:reset-password', ['identifier' => 'boss'])
+        ->expectsQuestion('New password (hidden, min 10 chars)', 'short')
+        ->assertExitCode(1);
+
+    expect(Hash::check('old-password', $u->refresh()->password))->toBeTrue();
 });
 
 test('admin creates a username account with a password and no email', function () {

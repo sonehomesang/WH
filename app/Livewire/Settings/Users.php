@@ -4,7 +4,6 @@ namespace App\Livewire\Settings;
 
 use App\Models\Department;
 use App\Models\Role;
-use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
@@ -134,22 +133,14 @@ class Users extends Component
     public function newUser(): void
     {
         $this->resetForm();
-        $this->password = self::defaultPassword();   // prefill from Settings › Access
         $this->showModal = true;
     }
 
-    /** The configurable default password for new accounts (decrypted, admin-set). */
-    public static function defaultPassword(): string
+    /** Fill a strong random password the admin can copy + hand out (shown once,
+     *  never stored anywhere — becomes a one-way hash on save). */
+    public function generatePassword(): void
     {
-        $enc = Setting::get('auth')['default_password_enc'] ?? null;
-        if (! $enc) {
-            return '';
-        }
-        try {
-            return \Illuminate\Support\Facades\Crypt::decryptString($enc);
-        } catch (\Throwable) {
-            return '';
-        }
+        $this->password = Str::password(12, symbols: false);
     }
 
     public function editUser(int $id): void

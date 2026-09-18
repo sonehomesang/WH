@@ -165,11 +165,14 @@
                             @if ($editingId)<span class="text-gray-400 font-normal">(ວ່າງ = ບໍ່ ປ່ຽນ)</span>
                             @else<span class="text-gray-400 font-normal">(admin ຕັ້ງ — ຜູ້ໃຊ້ ຕ້ອງ ປ່ຽນ ຕອນ login ຄັ້ງ ທຳອິດ)</span>@endif
                         </label>
-                        <input type="text" wire:model="password" autocomplete="off" placeholder="ຕັ້ງ password ໃຫ້ ຜູ້ໃຊ້ (prefill ຈາກ Default Password)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm font-mono" />
+                        <div class="flex gap-2">
+                            <input type="text" wire:model="password" autocomplete="off" placeholder="ພິມ password ໃຫ້ ຜູ້ໃຊ້ ຫຼື ກົດ 🎲" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm font-mono" />
+                            <button type="button" wire:click="generatePassword" class="h-9 px-3 rounded-md bg-white border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 whitespace-nowrap">🎲 Generate</button>
+                        </div>
                         @error('password')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div class="md:col-span-2 text-xs text-gray-500 bg-sky-50 border border-sky-100 rounded-md px-3 py-2">
-                        <b>ຕັ້ງ ລະຫັດ 2 ວິທີ:</b> ① admin ພິມ password ຂ້າງເທິງ (prefill ຈາກ Default Password) → ບອກ ຜູ້ໃຊ້ ເອງ, ຜູ້ໃຊ້ ປ່ຽນ ຕອນ login ຄັ້ງ ທຳອິດ · ② ຫຼື ໃສ່ email + ວ່າງ password → ລະບົບ ສ້າງ <b>ລິ້ງ ຕັ້ງ ລະຫັດ</b> ໃຫ້.
+                        <b>ຕັ້ງ ລະຫັດ 2 ວິທີ:</b> ① admin ພິມ ຫຼື ກົດ 🎲 generate → ບອກ ຜູ້ໃຊ້ ເອງ, ຜູ້ໃຊ້ ປ່ຽນ ຕອນ login ຄັ້ງ ທຳອິດ · ② ຫຼື ໃສ່ email + ວ່າງ password → ລະບົບ ສ້າງ <b>ລິ້ງ ຕັ້ງ ລະຫັດ</b> ໃຫ້. <b>ບໍ່ ມີ password ໃດ ຖືກ ເກັບ ໄວ້</b> — ກາຍ ເປັນ hash ທາງດຽວ.
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Role <span class="text-red-500">*</span></label>

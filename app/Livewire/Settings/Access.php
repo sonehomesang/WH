@@ -6,7 +6,6 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserHistory;
 use App\Services\LdapDirectory;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -29,9 +28,6 @@ class Access extends Component
     /** Optional shared temp password for the "one password for everyone" path. */
     public string $sharedPassword = '';
 
-    /** Default password prefilled when an admin creates a new account (Users page). */
-    public string $defaultPassword = '';
-
     /** Freshly generated unique temp passwords, shown ONCE for secure hand-out. */
     public array $provisioned = [];
 
@@ -45,22 +41,6 @@ class Access extends Component
         // super admin only — Auth Mode is a system-wide security control.
         abort_unless(auth()->user()->is_super_admin, 403);
         $this->mode = app(LdapDirectory::class)->mode();
-        $this->defaultPassword = Users::defaultPassword();   // decrypted, for the field
-    }
-
-    /** Save the default password for new accounts — encrypted at rest, never in code. */
-    public function saveDefaultPassword(): void
-    {
-        abort_unless(auth()->user()->is_super_admin, 403);
-        $this->validate(
-            ['defaultPassword' => ['required', 'string', 'min:8']],
-            ['defaultPassword.required' => 'ໃສ່ default password.', 'defaultPassword.min' => 'ຢ່າງ ໜ້ອຍ 8 ຕົວ.'],
-        );
-
-        $auth = Setting::get('auth', []);
-        $auth['default_password_enc'] = Crypt::encryptString($this->defaultPassword);
-        Setting::put('auth', $auth, auth()->id());
-        session()->flash('access_ok', '✓ ບັນທຶກ Default Password ແລ້ວ (ເກັບ ແບບ encrypted).');
     }
 
     /** Switch the auth mode. Phase A ships local_only + ad_strict; ad_fallback is Phase B. */
@@ -77,7 +57,7 @@ class Access extends Component
         $this->mode = $mode;
         $auth = Setting::get('auth', []);
         $auth['mode'] = $mode;
-        Setting::put('auth', $auth, auth()->id());   // merge — keep default_password_enc etc.
+        Setting::put('auth', $auth, auth()->id());   // merge — keep other auth keys intact
         // Keep the legacy ldap.login_with_ad flag in step so the Active Directory
         // page reflects reality (mode() is authoritative, but this avoids a toggle
         // that looks like it does nothing).

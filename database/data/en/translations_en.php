@@ -213,7 +213,7 @@ return [
     'VAT ຈະຄຳນວນ+freeze ຕອນສົ່ງ (ຕາມ supplier/global)' => 'VAT is computed + frozen on submit (by supplier/global)',
     'VAT ບໍ່ໄດ້ກຳນົດທີ່ contract — ໃຊ້ VAT ຂອງ supplier (ຫຼື global). ສັນຍາໃຊ້ເປັນ "ເຫດຜົນ" ຕອນປ່ຽນ VAT.' => 'VAT is not set on the contract — the supplier\'s VAT (or global) is used. The contract serves as the "reason" when VAT changes.',
     'Walk-in · ນຳມາແລ້ວ' => 'Walk-in · brought in',
-    'WIS Warehouse Info System · ເຂົ້າສູ່ລະບົບ' => 'WIS Warehouse Info System · Sign in',
+    'WH Warehouse Info System · ເຂົ້າສູ່ລະບົບ' => 'WH Warehouse Info System · Sign in',
     'X ປ່ຽນ' => 'X replace',
     'Σ ຈຳນວນ ລວມ' => 'Σ Total quantity',
     'ກ/ປ' => 'C/R',

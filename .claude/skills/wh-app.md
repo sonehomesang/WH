@@ -1,6 +1,6 @@
 ---
 name: wh-app
-description: Use whenever working on the WH Warehouse Information System app. Loads on any task involving Laravel migrations, Eloquent models, Livewire components, Blade templates, controllers, services, tests, deployment, schema changes, RBAC, permissions, scope rules, notifications, or workflow phases (6.x). The WH project is a PHP 8.3 + Laravel 12 + MySQL + Livewire 3 rewrite of the Firebase WIS app. The Firebase reference at D:\MyApps\WIS\ is read-only blueprint — never modify it. Mobile + desktop are both first-class. Apply this skill when the user mentions any module: users, roles, units, departments, uoms, locations, buildings, rooms, suppliers, materials, inventory, borrow, deposit, request, da, oga, expo, notifications, dashboard, settings, reports, audit.
+description: Use whenever working on the WH Warehouse Information System app. Loads on any task involving Laravel migrations, Eloquent models, Livewire components, Blade templates, controllers, services, tests, deployment, schema changes, RBAC, permissions, scope rules, notifications, or workflow phases (6.x). The WH project is a PHP 8.3 + Laravel 12 + MySQL + Livewire 3 rewrite of the Firebase WIS app. The Firebase reference at D:\MyApps\WIS-tooling\ is read-only blueprint — never modify it. Mobile + desktop are both first-class. Apply this skill when the user mentions any module: users, roles, units, departments, uoms, locations, buildings, rooms, suppliers, materials, inventory, borrow, deposit, request, da, oga, expo, notifications, dashboard, settings, reports, audit.
 ---
 
 # WH — Warehouse Information System (Laravel rewrite)
@@ -9,7 +9,7 @@ description: Use whenever working on the WH Warehouse Information System app. Lo
 
 - **Name:** WH (Warehouse Information System v2)
 - **Working folder:** `D:\MyApps\WH\` (you are here)
-- **Reference (READ-ONLY):** `D:\MyApps\WIS\` (Firebase blueprint — never modify)
+- **Reference (READ-ONLY):** `D:\MyApps\WIS-tooling\` (Firebase blueprint — never modify)
 - **Target host:** `wh.namtheun2.com` on cyberpersons.com
 - **Database:** MySQL 8 / MariaDB 10.6+ (local: `wh_db` / `wh_admin`)
 - **PHP:** 8.3.13 (via Laragon)
@@ -41,7 +41,7 @@ description: Use whenever working on the WH Warehouse Information System app. Lo
 
 ## Mobile + Desktop first-class
 
-Both must work. See `D:\MyApps\WIS\docs\v2\STACK.md` §"Mobile + Desktop Support":
+Both must work. See `D:\MyApps\WIS-tooling\docs\v2\STACK.md` §"Mobile + Desktop Support":
 
 - Mobile-first design (Tailwind `sm:` `md:` `lg:` `xl:` breakpoints)
 - Collapsible sidebar (hamburger toggle on `< md`)
@@ -59,22 +59,22 @@ ALWAYS read these before answering schema/RBAC/workflow questions:
 
 | Doc | What it answers |
 |---|---|
-| `D:\MyApps\WIS\docs\v2\WORKFLOW_SOP.md` | How to safely make changes (8-step procedure, 2 gates) |
-| `D:\MyApps\WIS\docs\v2\PHASE_6.3_KICKOFF.md` | Locked answers to 11 architectural questions |
-| `D:\MyApps\WIS\docs\v2\SCHEMA.md` | MySQL table structure (53 tables) |
-| `D:\MyApps\WIS\docs\v2\RBAC_MATRIX.md` | Permission matrix + scope rules (21 menus × 7 roles) |
-| `D:\MyApps\WIS\docs\v2\PHASE_PLAN.md` | 13 phase roadmap (6.0 → 6.12) |
-| `D:\MyApps\WIS\docs\v2\STACK.md` | Stack decisions including mobile/PWA |
-| `D:\MyApps\WIS\docs\v2\README.md` | Project overview |
-| `D:\MyApps\WIS\docs\CLAUDE.md` | ABSOLUTE RULES inherited from v1 |
-| `D:\MyApps\WIS\docs\EXPO_INFO.md` | Phase 5P Expo spec (current, accurate) |
-| `D:\MyApps\WIS\docs\WORKFLOWS.md` | State machines for borrow/request/deposit |
+| `D:\MyApps\WIS-tooling\docs\v2\WORKFLOW_SOP.md` | How to safely make changes (8-step procedure, 2 gates) |
+| `D:\MyApps\WIS-tooling\docs\v2\PHASE_6.3_KICKOFF.md` | Locked answers to 11 architectural questions |
+| `D:\MyApps\WIS-tooling\docs\v2\SCHEMA.md` | MySQL table structure (53 tables) |
+| `D:\MyApps\WIS-tooling\docs\v2\RBAC_MATRIX.md` | Permission matrix + scope rules (21 menus × 7 roles) |
+| `D:\MyApps\WIS-tooling\docs\v2\PHASE_PLAN.md` | 13 phase roadmap (6.0 → 6.12) |
+| `D:\MyApps\WIS-tooling\docs\v2\STACK.md` | Stack decisions including mobile/PWA |
+| `D:\MyApps\WIS-tooling\docs\v2\README.md` | Project overview |
+| `D:\MyApps\WIS-tooling\docs\CLAUDE.md` | ABSOLUTE RULES inherited from v1 |
+| `D:\MyApps\WIS-tooling\docs\EXPO_INFO.md` | Phase 5P Expo spec (current, accurate) |
+| `D:\MyApps\WIS-tooling\docs\WORKFLOWS.md` | State machines for borrow/request/deposit |
 
 ## Code v1 is source of truth (NOT docs v1)
 
 Docs `DATA_MODEL.md` and `ROLES_PERMISSIONS.md` are OLDER than code v1 — they predate the DA, OGA, and Expo modules. When docs and code disagree, **code wins**.
 
-Authoritative code paths in `D:\MyApps\WIS\src\`:
+Authoritative code paths in `D:\MyApps\WIS-tooling\src\`:
 
 | Domain | Source file |
 |---|---|

@@ -31,18 +31,18 @@ Examples that have already been verified:
 ## Specific source files by domain
 
 ### Identity / Users
-- Schema: `D:\MyApps\WIS\src\types\user.ts`
+- Schema: `D:\MyApps\WIS-tooling\src\types\user.ts`
 - Default users seeded: `scripts\seed\seed_test_users.ts`
 - Super admin claim: `scripts\seed\seed_super_admin.ts`
 
 ### RBAC / Roles / Permissions / Scope
-- Full matrix: `D:\MyApps\WIS\scripts\seed\seed_roles.ts:135-317`
+- Full matrix: `D:\MyApps\WIS-tooling\scripts\seed\seed_roles.ts:135-317`
 - Type definitions: `src/types/user.ts` (`MenuId`, `PermissionAction`, `PermissionSet`, `ScopeRules`)
 - Spatie config: TBD in WH project
-- Already mapped: `D:\MyApps\WIS\docs\v2\PHASE_6.3_KICKOFF.md` §7 (verbatim port)
+- Already mapped: `D:\MyApps\WIS-tooling\docs\v2\PHASE_6.3_KICKOFF.md` §7 (verbatim port)
 
 ### Organization dictionaries
-- All: `D:\MyApps\WIS\src\types\org.ts`
+- All: `D:\MyApps\WIS-tooling\src\types\org.ts`
 - Hierarchy: units → departments (FK), locations → buildings → rooms
 
 ### Suppliers / Materials / Inventory
@@ -121,13 +121,13 @@ Before promoting any v2 schema design to "decided":
 
 ```bash
 # Find a Firestore field name → MySQL column candidate
-grep -rn "fieldName" D:/MyApps/WIS/src/types/
+grep -rn "fieldName" D:/MyApps/WIS-tooling/src/types/
 
 # Find how v1 enforces a rule
-grep -rn "FieldName" D:/MyApps/WIS/src/services/
+grep -rn "FieldName" D:/MyApps/WIS-tooling/src/services/
 
 # Find a Firestore rule
-grep -rn "match /collection" D:/MyApps/WIS/firestore.rules
+grep -rn "match /collection" D:/MyApps/WIS-tooling/firestore.rules
 ```
 
 ## When in doubt

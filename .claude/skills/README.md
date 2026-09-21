@@ -37,15 +37,15 @@ description: ບອກວ່າເມື່ອໃດທີ່ skill ນີ້ຄ
 
 ## ການ override
 
-Skills ໃນ folder ນີ້ **ບໍ່ override** SOP ໃນ `D:\MyApps\WIS\docs\v2\WORKFLOW_SOP.md`. ມັນເພີ່ມເຕີມ — ບໍ່ປ່ຽນແທນ.
+Skills ໃນ folder ນີ້ **ບໍ່ override** SOP ໃນ `D:\MyApps\WIS-tooling\docs\v2\WORKFLOW_SOP.md`. ມັນເພີ່ມເຕີມ — ບໍ່ປ່ຽນແທນ.
 
 ຖ້າ user ໃຫ້ຄຳສັ່ງ direct ທີ່ຂັດກັບ skill — **user wins**.
 
 ## ກ່ຽວຂ້ອງ
 
-- Source SOP: `D:\MyApps\WIS\docs\v2\WORKFLOW_SOP.md`
-- Locked decisions: `D:\MyApps\WIS\docs\v2\PHASE_6.3_KICKOFF.md`
-- Project overview: `D:\MyApps\WIS\docs\v2\README.md`
+- Source SOP: `D:\MyApps\WIS-tooling\docs\v2\WORKFLOW_SOP.md`
+- Locked decisions: `D:\MyApps\WIS-tooling\docs\v2\PHASE_6.3_KICKOFF.md`
+- Project overview: `D:\MyApps\WIS-tooling\docs\v2\README.md`
 
 ## ການກວດສອບ skills
 

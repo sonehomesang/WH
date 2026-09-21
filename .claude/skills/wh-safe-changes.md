@@ -5,7 +5,7 @@ description: Use whenever proposing to create, modify, or delete files, run migr
 
 # WH — Safe Changes Workflow
 
-The full SOP lives at `D:\MyApps\WIS\docs\v2\WORKFLOW_SOP.md`. This skill is the binding summary.
+The full SOP lives at `D:\MyApps\WIS-tooling\docs\v2\WORKFLOW_SOP.md`. This skill is the binding summary.
 
 ## The 8 steps (never skip, never reorder)
 

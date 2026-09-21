@@ -1,11 +1,13 @@
 <div class="pb-6">
-    <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+    <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
         @include('settings._tabs')
         <div x-data="{ show: false }" x-on:saved.window="show = true; setTimeout(() => show = false, 2000)" x-show="show" style="display:none"
              class="fixed bottom-4 right-4 z-50 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 shadow-lg">ບັນທຶກແລ້ວ ✓</div>
 
+        {{-- Cards flow into 2 balanced columns on desktop, 1 on mobile --}}
+        <div class="mt-4 columns-1 lg:columns-2 gap-4 [&>div]:mb-4 [&>div]:break-inside-avoid">
         {{-- General / App --}}
-        <div class="bg-white border border-gray-100 rounded-lg p-5 md:max-w-md space-y-3">
+        <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
             <div>
                 <h3 class="font-medium text-gray-800">⚙️ ທົ່ວໄປ (General)</h3>
                 <p class="text-xs text-gray-500">ຄ່າພື້ນຖານ ຂອງແອັບ.</p>
@@ -24,7 +26,7 @@
         </div>
 
         {{-- Security / Session --}}
-        <div class="bg-white border border-gray-100 rounded-lg p-5 md:max-w-md space-y-4">
+        <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
             <div>
                 <h3 class="font-medium text-gray-800">🔒 ຄວາມ ປອດໄພ (Security)</h3>
                 <p class="text-xs text-gray-500">idle auto-logout.</p>
@@ -75,7 +77,7 @@
         </div>
 
         {{-- Modules on/off (feature flags) --}}
-        <div class="bg-white rounded-lg border border-gray-100 p-5 space-y-3 md:max-w-md">
+        <div class="bg-white rounded-lg border border-gray-100 p-5 space-y-3">
             <div>
                 <h3 class="font-medium text-gray-800">🧩 ໂມດູລ ທີ່ ເປີດ ໃຊ້ (Active Modules)</h3>
                 <p class="text-xs text-gray-500">ຕິກ ໝາຍ = ເປີດ ໃຊ້. ປິດ ໂມດູລ ທີ່ ບໍ່ ໃຊ້ → ຫາຍ ຈາກ ເມນູ ແລະ ເຂົ້າ ໜ້າ ນັ້ນ ບໍ່ ໄດ້. ໂມດູລ ຫຼັກ (Dashboard · Inventory · Settings) ເປີດ ຕະຫຼອດ.</p>
@@ -91,7 +93,7 @@
         </div>
 
         {{-- Currency --}}
-        <div class="bg-white border border-gray-100 rounded-lg p-5 md:max-w-md space-y-3">
+        <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
             <div>
                 <h3 class="font-medium text-gray-800">💱 ສະກຸນເງິນ (Currency)</h3>
                 <p class="text-xs text-gray-500">ສະກຸນຫຼັກ THB (ໄທ) + ສະກຸນຮອງ LAK (ກີບ) + ອັດຕາແລກປ່ຽນ.</p>
@@ -111,7 +113,7 @@
             @can('settings.edit')<div class="pt-1"><button wire:click="saveCurrency" class="text-sm text-white bg-sky-600 rounded-md px-5 py-2 min-h-[40px] hover:bg-sky-700">Save</button></div>@endcan
         </div>
 
-        <div class="bg-white border border-gray-100 rounded-lg p-5 md:max-w-md space-y-4">
+        <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-4">
             <div>
                 <h3 class="font-medium text-gray-800">VAT (global)</h3>
                 <p class="text-xs text-gray-500">ໃຊ້ເປັນຄ່າເລີ່ມຕົ້ນ — supplier contract ທີ່ active override ໄດ້.</p>
@@ -133,7 +135,7 @@
         </div>
 
         {{-- Request form fields — admin ເປີດ/ປິດ --}}
-        <div class="bg-white border border-gray-100 rounded-lg p-5 md:max-w-md space-y-3">
+        <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
             <div>
                 <h3 class="font-medium text-gray-800">Request form fields</h3>
                 <p class="text-xs text-gray-500">ເລືອກ field ໃດ ໃຫ້ສະແດງ ໃນຟອມ ໃບເບີກວັດສະດຸ (ປິດ = ເຊື່ອງ + ບໍ່ບັງຄັບ).</p>
@@ -152,7 +154,7 @@
         </div>
 
         {{-- Deposit form optional fields — admin ເປີດ/ປິດ (ໜ້າ ຝາກ ຂັ້ນ 1) --}}
-        <div class="bg-white border border-gray-100 rounded-lg p-5 md:max-w-md space-y-3">
+        <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
             <div>
                 <h3 class="font-medium text-gray-800">ຟອມ ຝາກ ເຄື່ອງ — ຫ້ອງ ເສີມ</h3>
                 <p class="text-xs text-gray-500">ຫ້ອງ ເສີມ ໃນ ຟອມ ຝາກ (ຂັ້ນ 1 · ໜ້າງານ). ປິດ = ເຊື່ອງ. ຊື່ · ລະຫັດ · ຮູບ · ຈຳນວນ · ບ່ອນຈັດເກັບ · ສະຖານະ = ສະແດງ ຕະຫຼອດ.</p>
@@ -170,7 +172,7 @@
         </div>
 
         {{-- Letterhead (PDF exports) --}}
-        <div class="bg-white border border-gray-100 rounded-lg p-5 md:max-w-lg space-y-3">
+        <div class="bg-white border border-gray-100 rounded-lg p-5 space-y-3">
             <div>
                 <h3 class="font-medium text-gray-800">Letterhead (PDF)</h3>
                 <p class="text-xs text-gray-500">logo + ຂໍ້ມູນບໍລິສັດ ສຳລັບ header/footer ຂອງ PDF (Borrow/Deposit/Request/DA/OGA).</p>
@@ -208,6 +210,7 @@
             @can('settings.edit')
                 <div class="pt-1"><button wire:click="saveLetterhead" wire:loading.attr="disabled" wire:target="saveLetterhead,lhLogo" class="text-sm text-white bg-sky-600 rounded-md px-5 py-2 min-h-[40px] hover:bg-sky-700 disabled:opacity-50">Save letterhead</button></div>
             @endcan
+        </div>
         </div>
     </div>
 </div>

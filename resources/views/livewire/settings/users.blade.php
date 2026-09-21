@@ -9,10 +9,16 @@
 
 <div class="pb-6">
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+        {{-- nav + toolbar freeze together as one sticky unit; publish its bottom edge
+             as --freeze-top so the table below can size + stick its header under it --}}
+        <div class="sticky top-16 z-30" x-data
+             x-init="const root = document.documentElement;
+                     const set = () => root.style.setProperty('--freeze-top', (64 + $el.offsetHeight) + 'px');
+                     set(); new ResizeObserver(set).observe($el);">
         @include('settings._tabs')
 
-        {{-- toolbar (freeze ໃຕ້ tabs): subtitle · A-Z filter · search/create --}}
-        <div class="sticky top-16 z-30 bg-gray-100 flex flex-col gap-2 py-2 sm:py-0 sm:h-[52px] sm:flex-row sm:items-center sm:gap-3 border-b border-gray-200">
+        {{-- toolbar (freezes with the tabs above): A-Z filter · search/create --}}
+        <div class="bg-white flex flex-col gap-2 px-1 py-1.5 sm:flex-row sm:items-center sm:gap-3 border-b-2 border-gray-300 shadow-sm">
             {{-- A-Z group filter --}}
             <div class="flex-1 min-w-0 overflow-x-auto">
                 <div class="flex items-center gap-0.5">
@@ -30,6 +36,7 @@
                 @endcan
             </div>
         </div>
+        </div>{{-- /sticky nav+toolbar unit --}}
 
         <div x-data="{ show: false }" x-on:saved.window="show = true; setTimeout(() => show = false, 2000)" x-show="show" style="display:none"
              class="fixed bottom-4 right-4 z-50 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 shadow-lg">ບັນທຶກແລ້ວ ✓</div>
@@ -52,10 +59,10 @@
             </div>
         @endif
 
-        {{-- Desktop table --}}
-        <div class="hidden md:block bg-white border border-gray-100 rounded-lg mt-3 overflow-auto max-h-[calc(100vh-15rem)]">
+        {{-- Desktop table — page scrolls; the column header sticks just under the frozen nav/toolbar (--freeze-top) --}}
+        <div class="hidden md:block bg-white border border-gray-100 rounded-lg mt-3">
             <table class="w-full text-sm table-fixed">
-                <thead class="sticky top-0 z-10 bg-gray-50 text-gray-700 border-b border-gray-200 shadow-sm">
+                <thead class="sticky z-20 bg-gray-50 text-gray-700 border-b border-gray-200 shadow-sm" style="top: var(--freeze-top, 12rem)">
                     <tr>
                         <th class="text-left font-semibold px-4 py-2">User</th>
                         <th class="text-left font-semibold px-4 py-2 w-32">Role</th>

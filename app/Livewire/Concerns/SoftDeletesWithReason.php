@@ -42,6 +42,12 @@ trait SoftDeletesWithReason
     /** Hook for extra authorization (e.g. department scope). Override as needed. */
     protected function deleteGuard(Model $record): void {}
 
+    /** Hook after a successful soft-delete (e.g. write an audit-history row). Override as needed. */
+    protected function afterDeleted(Model $record): void {}
+
+    /** Hook after a successful restore. Override as needed. */
+    protected function afterRestored(Model $record): void {}
+
     /** Human label of the record shown in the modal + flash. */
     protected function deleteLabel(Model $record): string
     {
@@ -96,6 +102,7 @@ trait SoftDeletesWithReason
         $this->deleteGuard($record);
         $record->forceFill(['deleted_reason' => $this->deleteReason, 'deleted_by' => auth()->id()])->save();
         $record->delete();
+        $this->afterDeleted($record);
         $this->deletingId = null;
         $this->deleteReason = '';
         session()->flash('ok', '✓ ລຶບ '.$this->deleteNoun().' '.$this->deleteLabel($record).' (ຍ້າຍ ໄປ Deleted Log)');
@@ -111,6 +118,7 @@ trait SoftDeletesWithReason
             $this->deleteGuard($record);
             $record->restore();
             $record->forceFill(['deleted_reason' => null, 'deleted_by' => null])->save();
+            $this->afterRestored($record);
             session()->flash('ok', '✓ ກູ້ຄືນ '.$this->deleteNoun().' '.$this->deleteLabel($record));
         }
     }

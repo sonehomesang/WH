@@ -30,6 +30,7 @@ class Audit extends Component
         'da' => ['discrepancy_advice_history', 'discrepancy_advices', 'da_number'],
         'oga' => ['oga_history', 'outwards_goods_advices', 'oga_number'],
         'user' => ['user_history', 'users', 'username'],   // account actions: create/activate/lock…
+        'inventory' => ['inventory_history', 'inventory_items', 'slug'],   // item actions: create/update/(de)activate/delete/restore
     ];
 
     public function mount(): void

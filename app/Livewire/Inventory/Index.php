@@ -6,6 +6,7 @@ use App\Imports\InventoryCsvImporter;
 use App\Livewire\Concerns\SoftDeletesWithReason;
 use App\Models\Building;
 use App\Models\Department;
+use App\Models\InventoryHistory;
 use App\Models\InventoryItem;
 use App\Models\InventoryItemPhoto;
 use App\Models\Location;
@@ -231,6 +232,7 @@ class Index extends Component
             $item = InventoryItem::create($payload);
         }
 
+        $this->logAudit($item, $this->editingId ? 'update' : 'create');
         $this->storePhotos($item);
 
         $this->showModal = false;
@@ -299,6 +301,34 @@ class Index extends Component
         $m = InventoryItem::findOrFail($id);
         abort_unless(auth()->user()->can('inventory.'.($m->is_active ? 'deactivate' : 'activate')), 403);
         $m->update(['is_active' => ! $m->is_active, 'updated_by' => auth()->id()]);
+        $this->logAudit($m, $m->is_active ? 'activate' : 'deactivate');
+    }
+
+    // ── audit history: append-only log of every action (actor + timestamp) → Settings › Audit ──
+    protected function logAudit(InventoryItem $item, string $action, ?string $comment = null): void
+    {
+        $actor = auth()->user();
+        InventoryHistory::create([
+            'record_id' => $item->id,
+            'action' => $action,
+            'status' => $item->status,
+            'user_id' => $actor?->id,
+            'user_name' => $actor?->display_name ?: $actor?->email,
+            'role' => $actor?->roles->first()?->name,
+            'comment' => $comment,
+            'created_at' => now(),
+        ]);
+    }
+
+    /** SoftDeletesWithReason hooks — log the delete/restore too. */
+    protected function afterDeleted(Model $record): void
+    {
+        $this->logAudit($record, 'delete', $record->deleted_reason);
+    }
+
+    protected function afterRestored(Model $record): void
+    {
+        $this->logAudit($record, 'restore');
     }
 
     // ── ລຶບ-ດ້ວຍ-ເຫດຜົນ + Deleted Log (trait SoftDeletesWithReason) ──

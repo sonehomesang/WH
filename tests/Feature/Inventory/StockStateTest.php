@@ -18,10 +18,10 @@ beforeEach(function () {
     InventoryItem::create(['slug' => 'C1', 'name' => 'Ok item C', 'quantity' => 10, 'min_quantity' => 2]);    // ok
 });
 
-test('header KPIs compute stock state from qty vs min_quantity', function () {
+test('header shows the total-item count and computes stock state from qty vs min_quantity', function () {
     Livewire::test(Index::class)
         ->assertOk()
-        ->assertSee('ໝົດ stock')             // KPI label in the header band
+        ->assertSee('ລາຍການ ທັງໝົດ')          // total-item count teleported into the app header
         ->assertViewHas('kpi', function ($k) {
             return $k['items'] === 5
                 && $k['qty'] === 18           // 0+0+3+5+10

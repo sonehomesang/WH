@@ -137,15 +137,17 @@
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                                 </button>
                                 @if ($moduleIcon)
-                                    <span class="w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm grid place-items-center text-xl shrink-0">{{ $moduleIcon }}</span>
+                                    <span class="hidden sm:grid w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm place-items-center text-xl shrink-0">{{ $moduleIcon }}</span>
                                 @endif
-                                <h1 class="text-[26px] font-bold text-gray-800 truncate shrink-0 leading-tight">{{ $pageTitle }}</h1>
+                                <h1 class="text-lg sm:text-2xl lg:text-[26px] font-bold text-gray-800 truncate min-w-0 leading-tight">{{ $pageTitle }}</h1>
                                 @if ($pageSubtitle)
                                     <span class="text-gray-300 hidden lg:inline">·</span>
                                     <span class="text-sm text-gray-500 truncate hidden lg:inline">{{ $pageSubtitle }}</span>
                                 @endif
+                                {{-- per-page teleport slot (e.g. Inventory total count) --}}
+                                <span id="page-header-slot" class="contents"></span>
                             </div>
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-1 shrink-0">
                                 {{-- Language toggle (Lao / English) — top-right --}}
                                 <div class="flex items-center rounded-lg border border-white/70 bg-white/70 backdrop-blur text-xs font-semibold overflow-hidden shrink-0 mr-1" title="ປ່ຽນ ພາສາ / Language">
                                     <a href="{{ route('locale.switch', 'lo') }}"
@@ -157,7 +159,7 @@
                                 </div>
                                 @auth
                                     <button type="button" x-data="{ busy: false }" @click="busy = true; window.updateApp()" :disabled="busy"
-                                            class="p-2 text-gray-500 hover:text-sky-600 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                                            class="hidden sm:block p-2 text-gray-500 hover:text-sky-600 rounded-md hover:bg-gray-50 disabled:opacity-50"
                                             title="ອັບເດດ ແອັບ ໃຫ້ເປັນລຸ້ນລ່າສຸດ (ລ້າງ cache + ໂຫຼດໃໝ່)" aria-label="ອັບເດດ ແອັບ">
                                         <svg class="w-5 h-5" :class="busy && 'animate-spin'" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
                                     </button>

@@ -33,30 +33,20 @@
             ];
         @endphp
 
-        {{-- live stock KPIs (the page identity is already in the app top bar — no duplicate title) --}}
-        <div class="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden mb-3">
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-px bg-gray-100">
-                @php
-                    $kpiTiles = [
-                        ['label' => '📦 ລາຍການ ທັງໝົດ', 'value' => $kpi['items'], 'hint' => 'distinct items', 'tone' => 'text-gray-800'],
-                        ['label' => 'Σ ຈຳນວນ ລວມ', 'value' => $kpi['qty'], 'hint' => 'ທຸກ ໜ່ວຍ ລວມ', 'tone' => 'text-gray-800'],
-                        ['label' => '🔴 ໝົດ stock', 'value' => $kpi['out'], 'hint' => 'qty = 0', 'tone' => 'text-rose-600'],
-                        ['label' => '🟠 stock ຕ່ຳ', 'value' => $kpi['low'], 'hint' => 'qty ≤ min', 'tone' => 'text-amber-600'],
-                        ['label' => '📍 ຈຸດ ຈັດ ເກັບ', 'value' => $kpi['locations'], 'hint' => 'locations', 'tone' => 'text-gray-800'],
-                    ];
-                @endphp
-                @foreach ($kpiTiles as $t)
-                    <div class="bg-white px-4 py-4">
-                        <p class="text-sm text-gray-500 truncate">{{ $t['label'] }}</p>
-                        <p class="text-3xl font-bold tabular-nums leading-tight mt-1 {{ $t['tone'] }}">{{ number_format($t['value']) }}</p>
-                        <p class="text-xs text-gray-500 truncate mt-0.5">{{ $t['hint'] }}</p>
-                    </div>
-                @endforeach
-            </div>
-        </div>
+        {{-- frozen header group: toolbar freezes; publish its bottom edge as
+             --freeze-top so the table header sticks just under it --}}
+        <div class="sticky top-16 z-30 bg-gray-100 pt-3" x-data
+             x-init="const root = document.documentElement;
+                     const set = () => root.style.setProperty('--freeze-top', (64 + $el.offsetHeight) + 'px');
+                     set(); new ResizeObserver(set).observe($el);">
+        {{-- total item count → teleported up into the app header top bar --}}
+        <template x-teleport="#page-header-slot">
+            <span class="hidden lg:inline-flex items-baseline gap-1.5 ml-2 px-2.5 py-1 rounded-lg bg-white/70 border border-white/70 shadow-sm">
+                <span class="text-xl font-bold tabular-nums leading-none text-gray-800">{{ number_format($kpi['items']) }}</span>
+                <span class="text-xs text-gray-500 whitespace-nowrap">ລາຍການ ທັງໝົດ</span>
+            </span>
+        </template>
 
-        {{-- frozen header group: toolbar + chips freeze together --}}
-        <div class="sticky top-16 z-30 bg-gray-100">
         {{-- toolbar --}}
         <div class="flex flex-col gap-2 py-3 sm:py-0 sm:min-h-[52px] sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:flex-1 sm:min-w-0">
@@ -100,35 +90,15 @@
             </div>
         </div>
 
-        {{-- stock-state chips (computed from qty vs min_quantity) --}}
-        <div class="flex flex-wrap items-center gap-2 pb-2">
-            @php
-                $stockChips = [
-                    ['k' => '', 'label' => 'ທັງໝົດ', 'count' => $kpi['items'], 'dot' => null],
-                    ['k' => 'ok', 'label' => 'ພຽງພໍ', 'count' => $kpi['ok'], 'dot' => 'bg-emerald-500'],
-                    ['k' => 'low', 'label' => 'ຕ່ຳ (≤min)', 'count' => $kpi['low'], 'dot' => 'bg-amber-500'],
-                    ['k' => 'out', 'label' => 'ໝົດ (0)', 'count' => $kpi['out'], 'dot' => 'bg-rose-500'],
-                ];
-            @endphp
-            @foreach ($stockChips as $c)
-                <button type="button" wire:click="$set('stockFilter', '{{ $c['k'] }}')"
-                        class="text-xs rounded-full px-3 py-1 border flex items-center gap-1.5 transition {{ $stockFilter === $c['k'] ? 'bg-sky-600 border-sky-600 text-white' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50' }}">
-                    @if ($c['dot'])<span class="w-1.5 h-1.5 rounded-full {{ $c['dot'] }}"></span>@endif
-                    {{ $c['label'] }}
-                    <span class="rounded-full px-1.5 tabular-nums {{ $stockFilter === $c['k'] ? 'bg-white/20' : 'bg-gray-100' }}">{{ number_format($c['count']) }}</span>
-                </button>
-            @endforeach
-            <span class="text-xs text-gray-400 ml-1">{{ number_format($items->total()) }} {{ app()->getLocale() === 'en' ? 'items' : 'ລາຍການ' }}</span>
-        </div>
         </div>{{-- /frozen header group --}}
 
         <div x-data="{ show: false }" x-on:saved.window="show = true; setTimeout(() => show = false, 2000)" x-show="show" style="display:none"
              class="fixed bottom-4 right-4 z-50 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 shadow-lg">ບັນທຶກແລ້ວ ✓</div>
 
         {{-- Desktop table --}}
-        <div class="hidden md:block bg-white border border-gray-100 rounded-lg overflow-x-auto">
+        <div class="hidden md:block bg-white border border-gray-100 rounded-lg">
             <table class="wh-list w-full text-sm">
-                <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+                <thead class="sticky z-20 bg-slate-100 text-slate-600 border-b-2 border-slate-300 shadow-sm" style="top: var(--freeze-top, 14rem)">
                     <tr class="text-xs font-semibold uppercase tracking-wide">
                         <th x-show="cols.materialNo" x-cloak class="text-left font-semibold px-4 py-2 whitespace-nowrap">Material No.</th>
                         <th class="text-left font-semibold px-4 py-2 w-full">Item</th>
@@ -144,7 +114,7 @@
                 <tbody>
                     @forelse ($items as $it)
                         <tr wire:key="inv-{{ $it->id }}" class="border-t border-gray-200">
-                            <td x-show="cols.materialNo" x-cloak class="px-4 py-2 font-mono text-xs text-gray-500 whitespace-nowrap">{{ $it->slug }}</td>
+                            <td x-show="cols.materialNo" x-cloak class="px-4 py-2 font-mono text-sm font-bold text-gray-800 whitespace-nowrap">{{ $it->slug }}</td>
                             <td class="px-4 py-2 w-full">
                                 <div class="flex items-center gap-2">
                                     @if ($photo = $it->primaryPhoto)
@@ -192,13 +162,8 @@
                             @endif
                             <div class="font-medium text-gray-800 {{ $it->is_active ? '' : 'opacity-50' }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="{{ $it->name }}">{{ $it->name }}</div>
                         </div>
-                        <div class="flex items-center gap-1 shrink-0">
-                            @php $ss = $stockState($it); @endphp
-                            <span class="text-xs font-medium rounded-full px-2 py-0.5 {{ $stockMeta[$ss][1] }}">{{ $stockMeta[$ss][0] }}</span>
-                            <span class="text-xs font-medium rounded-full px-2 py-0.5 {{ $statusBadge($it->status) }}">{{ $it->status }}</span>@if ($it->condition_status && $it->condition_status !== 'in_service')<span class="text-xs rounded-full px-2 py-0.5 {{ \App\Support\ConditionStatus::badge($it->condition_status) }}">{{ \App\Support\ConditionStatus::shortLabel($it->condition_status) }}</span>@endif
-                        </div>
                     </div>
-                    <div class="text-xs text-gray-500 mt-1"><span class="font-mono text-gray-400">{{ $it->slug }}</span> · Qty {{ $it->quantity }} {{ $it->unit }} · {{ collect([$it->location?->name, $it->building?->name])->filter()->implode(' / ') ?: '—' }}</div>
+                    <div class="text-[13px] text-sky-800 font-semibold mt-1"><span class="font-mono">{{ $it->slug }}</span> · {{ $it->unit }} · {{ collect([$it->location?->name, $it->building?->name, $it->room?->name, $it->shelf_label])->filter()->implode(' / ') ?: '—' }}</div>
                     @if ($showDeleted)
                         <div class="text-[11px] text-red-600 mt-1">🗑 ລຶບ: {{ $it->deleted_at?->format('d/m/Y H:i') }} · ໂດຍ {{ $it->deletedBy?->display_name ?? '—' }}@if ($it->deleted_reason) · {{ $it->deleted_reason }}@endif</div>
                         <div class="flex gap-2 mt-2">

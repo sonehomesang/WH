@@ -37,16 +37,33 @@ test('creating an item logs a create action with actor and timestamp', function 
     expect($row->created_at)->not->toBeNull();
 });
 
-test('editing an item logs an update action', function () {
-    $admin = User::factory()->create(['is_super_admin' => true]);
+test('editing logs an update with the reason and notifies other admins (not the actor)', function () {
+    $admin = User::factory()->create(['is_super_admin' => true]);   // actor
+    $other = User::factory()->create(['status' => 'active']);
+    $other->assignRole('admin');
     $this->actingAs($admin);
     $item = mkItem('w-1');
 
     Livewire::test(Index::class)
-        ->call('editItem', $item->id)->set('name', 'W edited')
+        ->call('editItem', $item->id)->set('name', 'W edited')->set('changeReason', 'ປັບ ຊື່')
         ->call('save')->assertHasNoErrors();
 
-    expect(InventoryHistory::where('record_id', $item->id)->where('action', 'update')->exists())->toBeTrue();
+    $row = InventoryHistory::where('record_id', $item->id)->where('action', 'update')->first();
+    expect($row)->not->toBeNull();
+    expect($row->comment)->toBe('ປັບ ຊື່');
+
+    expect(\App\Models\Notification::where('user_id', $other->id)->where('title', 'like', 'Inventory:%')->exists())->toBeTrue();
+    expect(\App\Models\Notification::where('user_id', $admin->id)->where('title', 'like', 'Inventory:%')->exists())->toBeFalse();
+});
+
+test('editing without a change reason is rejected', function () {
+    $admin = User::factory()->create(['is_super_admin' => true]);
+    $this->actingAs($admin);
+    $item = mkItem('w-1b');
+
+    Livewire::test(Index::class)
+        ->call('editItem', $item->id)->set('name', 'X')
+        ->call('save')->assertHasErrors('changeReason');
 });
 
 test('toggling active state logs deactivate then activate', function () {

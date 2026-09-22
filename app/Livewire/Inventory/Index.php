@@ -12,6 +12,8 @@ use App\Models\InventoryItemPhoto;
 use App\Models\Location;
 use App\Models\Room;
 use App\Models\Uom;
+use App\Models\User;
+use App\Services\NotificationService;
 use App\Support\ConditionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +83,8 @@ class Index extends Component
 
     public bool $is_active = true;
 
+    public string $changeReason = '';   // required reason when EDITING an item (→ audit comment + admin notify)
+
     /** @var array<int, TemporaryUploadedFile> */
     public array $newPhotos = [];
 
@@ -148,6 +152,7 @@ class Index extends Component
         abort_unless(auth()->user()->can('inventory.edit'), 403);
         $m = InventoryItem::findOrFail($id);
         $this->editingId = $m->id;
+        $this->changeReason = '';
         $this->name = $m->name;
         $this->description = $m->description ?? '';
         $this->category = $m->category ?? '';
@@ -202,6 +207,13 @@ class Index extends Component
             'newPhotos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
+        if ($this->editingId) {
+            $this->validate(
+                ['changeReason' => ['required', 'string', 'min:3', 'max:500']],
+                ['changeReason.required' => 'ກະລຸນາ ໃສ່ ເຫດຜົນ ການ ປ່ຽນແປງ.', 'changeReason.min' => 'ເຫດຜົນ ຢ່າງ ໜ້ອຍ 3 ຕົວ.']
+            );
+        }
+
         if (count($this->existingPhotos) + count($this->newPhotos) > self::MAX_PHOTOS) {
             $this->addError('newPhotos', 'ຮູບໄດ້ສູງສຸດ '.self::MAX_PHOTOS.' ໃບຕໍ່ item.');
 
@@ -232,7 +244,12 @@ class Index extends Component
             $item = InventoryItem::create($payload);
         }
 
-        $this->logAudit($item, $this->editingId ? 'update' : 'create');
+        if ($this->editingId) {
+            $this->logAudit($item, 'update', $this->changeReason);
+            $this->notifyAdmins($item, 'update', $this->changeReason);
+        } else {
+            $this->logAudit($item, 'create');
+        }
         $this->storePhotos($item);
 
         $this->showModal = false;
@@ -301,7 +318,11 @@ class Index extends Component
         $m = InventoryItem::findOrFail($id);
         abort_unless(auth()->user()->can('inventory.'.($m->is_active ? 'deactivate' : 'activate')), 403);
         $m->update(['is_active' => ! $m->is_active, 'updated_by' => auth()->id()]);
-        $this->logAudit($m, $m->is_active ? 'activate' : 'deactivate');
+        $action = $m->is_active ? 'activate' : 'deactivate';
+        $this->logAudit($m, $action);
+        if ($action === 'deactivate') {
+            $this->notifyAdmins($m, 'deactivate');
+        }
     }
 
     // ── audit history: append-only log of every action (actor + timestamp) → Settings › Audit ──
@@ -324,11 +345,35 @@ class Index extends Component
     protected function afterDeleted(Model $record): void
     {
         $this->logAudit($record, 'delete', $record->deleted_reason);
+        $this->notifyAdmins($record, 'delete', $record->deleted_reason);
     }
 
     protected function afterRestored(Model $record): void
     {
         $this->logAudit($record, 'restore');
+        $this->notifyAdmins($record, 'restore');
+    }
+
+    /**
+     * Alert other admins (never the actor) so multi-level management can see who
+     * changed what. Recipients = active users with the admin/super_admin role or
+     * the super-admin flag. Significant actions only (update/deactivate/delete/restore).
+     */
+    protected function notifyAdmins(InventoryItem $item, string $action, ?string $reason = null): void
+    {
+        $actor = auth()->user();
+        $adminIds = User::query()->where('status', 'active')->where('id', '!=', $actor?->id)
+            ->where(fn ($q) => $q
+                ->whereHas('roles', fn ($r) => $r->whereIn('name', ['admin', 'super_admin']))
+                ->orWhere('is_super_admin', true))
+            ->pluck('id')->all();
+        if (empty($adminIds)) {
+            return;
+        }
+        $verb = ['update' => 'ແກ້ໄຂ', 'deactivate' => 'ປິດໃຊ້', 'delete' => 'ລຶບ', 'restore' => 'ກູ້ຄືນ'][$action] ?? $action;
+        $who = $actor?->display_name ?: $actor?->email;
+        $msg = $who.' · '.$item->name.($reason ? ' · ເຫດຜົນ: '.$reason : '');
+        app(NotificationService::class)->notifyMany($adminIds, 'info', "Inventory: {$verb} {$item->slug}", $msg, route('inventory', ['search' => $item->slug]));
     }
 
     // ── ລຶບ-ດ້ວຍ-ເຫດຜົນ + Deleted Log (trait SoftDeletesWithReason) ──
@@ -355,6 +400,7 @@ class Index extends Component
     protected function resetForm(): void
     {
         $this->editingId = null;
+        $this->changeReason = '';
         $this->name = '';
         $this->description = '';
         $this->category = '';

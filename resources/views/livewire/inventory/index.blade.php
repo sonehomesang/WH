@@ -254,6 +254,14 @@
                     </div>
 
                     <label class="flex items-center gap-2 text-sm text-gray-700 md:col-span-2"><input type="checkbox" wire:model="is_active" class="rounded border-gray-300 text-sky-600 focus:ring-sky-500" /> Active</label>
+
+                    @if ($editingId)
+                        <div class="md:col-span-2 border-t border-gray-100 pt-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ເຫດຜົນ ການ ປ່ຽນແປງ <span class="text-red-500">*</span></label>
+                            <textarea wire:model="changeReason" rows="2" class="w-full rounded-md border-gray-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="ເປັນຫຍັງຈຶ່ງແກ້? (ຈະຖືກເກັບໃນ Audit log ແລະ ແຈ້ງ admin)"></textarea>
+                            @error('changeReason')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    @endif
                 </div>
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-3 bg-gray-50/70 border-t border-gray-100 shrink-0">

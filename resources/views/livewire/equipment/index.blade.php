@@ -9,6 +9,10 @@
 @endphp
 
 <div class="pb-6" x-data="{ tab: '{{ in_array(request('tab'), ['register', 'inspection', 'maintenance'], true) ? request('tab') : 'register' }}', bigImg: null }" @wh-lightbox.window="bigImg = $event.detail">
+    {{-- box-shadow (not border-bottom) so the sticky column-header divider stays
+         glued to the register table header under border-collapse — a real border
+         is "owned" by the first body row and scrolls away. --}}
+    <style>.eq-list thead th { box-shadow: inset 0 -2px 0 #cbd5e1; }</style>
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
 
         <div x-data="{ show: false }" x-on:saved.window="show = true; setTimeout(() => show = false, 2000)" x-show="show" style="display:none"
@@ -25,8 +29,11 @@
         <div x-show="tab==='register'">
             {{-- live KPIs (page identity is already in the app top bar) --}}
             <div class="pt-3">@include('partials._kpi-band', ['tiles' => $kpi])</div>
-            {{-- toolbar (frozen ໃຕ້ ແທັບ) --}}
-            <div class="sticky top-[6.5rem] z-20 bg-gray-100 flex flex-wrap items-center gap-2 py-2">
+            {{-- toolbar (frozen ໃຕ້ ແທັບ) — publishes --freeze-top (104px = 64 app-header + 40 tabs) so the register thead sticks just under it --}}
+            <div class="sticky top-[6.5rem] z-20 bg-gray-100 flex flex-wrap items-center gap-2 py-2" x-data
+                 x-init="const root = document.documentElement;
+                         const set = () => root.style.setProperty('--freeze-top', (104 + $el.offsetHeight) + 'px');
+                         set(); new ResizeObserver(set).observe($el);">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="ຄົ້ນຫາ ຊື່/ລະຫັດ/serial…"
                        class="rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm w-56" />
                 <select wire:model.live="categoryFilter" class="rounded-md border-gray-300 shadow-sm text-sm">
@@ -59,9 +66,9 @@
             </div>
 
             {{-- Desktop table --}}
-            <div class="hidden md:block bg-white border border-gray-100 rounded-lg overflow-x-auto">
-                <table class="wh-list w-full text-sm table-fixed">
-                    <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+            <div class="hidden md:block bg-white border border-gray-100 rounded-lg">
+                <table class="wh-list eq-list w-full text-sm table-fixed">
+                    <thead class="sticky z-10 bg-slate-100 text-slate-600" style="top: var(--freeze-top, 14rem)">
                         <tr class="text-xs font-semibold uppercase tracking-wide">
                             <th class="text-left font-semibold px-3 py-2 w-28">ລະຫັດເຄື່ອງ</th>
                             <th class="text-left font-semibold px-3 py-2 w-28">ທະບຽນຊັບສິນ</th>

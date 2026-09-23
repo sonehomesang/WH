@@ -14,6 +14,8 @@
             <select wire:model.live="moduleFilter" class="rounded-md border-gray-300 text-sm">
                 <option value="">ທຸກ module</option>
                 <option value="borrow">Borrow</option><option value="request">Request</option><option value="deposit">Deposit</option><option value="da">DA</option><option value="oga">OGA</option><option value="user">Users</option>
+                <option value="inventory">Inventory</option><option value="supplier">Supplier</option>
+                <option value="uom">UoM</option><option value="unit">Unit</option><option value="department">Department</option><option value="location">Location</option><option value="building">Building</option><option value="room">Room</option>
             </select>
             <label class="text-xs text-gray-500">ແຕ່ <input type="date" wire:model.live="from" class="rounded-md border-gray-300 text-sm" /></label>
             <label class="text-xs text-gray-500">ຫາ <input type="date" wire:model.live="to" class="rounded-md border-gray-300 text-sm" /></label>

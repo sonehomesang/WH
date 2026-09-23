@@ -34,6 +34,12 @@ class Audit extends Component
         'supplier' => ['supplier_history', 'suppliers', 'name'],   // supplier actions
     ];
 
+    /**
+     * Modules stored in the generic audit_history table (one row per action,
+     * record_label denormalized) — read directly with no parent join.
+     */
+    public const GENERIC_MODULES = ['uom', 'unit', 'department', 'location', 'building', 'room'];
+
     public function mount(): void
     {
         abort_unless(auth()->user()->can('audit.view'), 403);
@@ -63,6 +69,21 @@ class Audit extends Component
                 ->when($this->from !== '', fn ($w) => $w->whereDate('h.created_at', '>=', $this->from))
                 ->when($this->to !== '', fn ($w) => $w->whereDate('h.created_at', '<=', $this->to));
             $parts[] = $q;
+        }
+
+        // Generic audit_history (uom / org / facilities) — no parent join; module
+        // + record_label are stored on the row itself.
+        if ($this->moduleFilter === '' || in_array($this->moduleFilter, self::GENERIC_MODULES, true)) {
+            $g = DB::table('audit_history as h')
+                ->when($this->moduleFilter !== '', fn ($w) => $w->where('h.module', $this->moduleFilter))
+                ->selectRaw('h.module as module, h.record_label as number, h.action, h.status, h.user_name, h.role, h.comment, h.created_at')
+                ->when($this->search !== '', fn ($w) => $w->where(fn ($x) => $x
+                    ->where('h.record_label', 'like', "%{$this->search}%")
+                    ->orWhere('h.user_name', 'like', "%{$this->search}%")
+                    ->orWhere('h.action', 'like', "%{$this->search}%")))
+                ->when($this->from !== '', fn ($w) => $w->whereDate('h.created_at', '>=', $this->from))
+                ->when($this->to !== '', fn ($w) => $w->whereDate('h.created_at', '<=', $this->to));
+            $parts[] = $g;
         }
 
         $union = array_shift($parts);

@@ -10,10 +10,10 @@ beforeEach(function () {
     $this->actingAs(User::factory()->create(['is_super_admin' => true]));
 });
 
-test('request index shows the KPI band and clamps a non-whitelisted perPage', function () {
+test('request index shows the total in the header and clamps a non-whitelisted perPage', function () {
     Livewire::test(Index::class)
         ->assertOk()
-        ->assertSee('ໃບ ເບີກ ທັງໝົດ')
+        ->assertSee('ໃບເບີກ ທັງໝົດ')      // total surfaced in the app header (teleported)
         ->set('perPage', 999)
         ->assertViewHas('records', fn ($p) => $p->perPage() === 8);
 });

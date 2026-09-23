@@ -14,12 +14,24 @@
 @endphp
 
 <div class="pb-6">
+    {{-- box-shadow (not border-bottom) so the sticky column-header divider stays
+         glued to the header under border-collapse — a real border is "owned" by
+         the first body row and scrolls away. --}}
+    <style>.request-list thead th { box-shadow: inset 0 -2px 0 #cbd5e1; }</style>
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
-        {{-- live KPIs (page identity is already in the app top bar — no duplicate title) --}}
-        @include('partials._kpi-band', ['tiles' => $kpi])
-
-        {{-- frozen header group: toolbar + chips freeze together --}}
-        <div class="sticky top-16 z-30 bg-gray-100/95 backdrop-blur">
+        {{-- frozen header group: toolbar + chips freeze; publish its bottom edge
+             as --freeze-top so the table header sticks just under it --}}
+        <div class="sticky top-16 z-30 bg-gray-100 pt-3 pb-2" x-data
+             x-init="const root = document.documentElement;
+                     const set = () => root.style.setProperty('--freeze-top', (64 + $el.offsetHeight) + 'px');
+                     set(); new ResizeObserver(set).observe($el);">
+        {{-- total request count → teleported up into the app header top bar --}}
+        <template x-teleport="#page-header-slot">
+            <span class="hidden lg:inline-flex items-baseline gap-1.5 ml-2 px-2.5 py-1 rounded-lg bg-white/70 border border-white/70 shadow-sm">
+                <span class="text-xl font-bold tabular-nums leading-none text-gray-800">{{ number_format($kpi[0]['value']) }}</span>
+                <span class="text-xs text-gray-500 whitespace-nowrap">ໃບເບີກ ທັງໝົດ</span>
+            </span>
+        </template>
             <div class="flex flex-col gap-2 py-3 sm:py-2 sm:min-h-[52px] sm:flex-row sm:items-center sm:gap-3">
                 <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:flex-1 sm:min-w-0">
                     <div class="relative w-full sm:flex-1 sm:min-w-[9rem] sm:max-w-md">
@@ -48,10 +60,9 @@
         @if (session('ok'))<div class="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 mb-3">{{ session('ok') }}</div>@endif
 
         {{-- Desktop --}}
-        <div class="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="wh-list w-full text-sm">
-                    <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+        <div class="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm">
+            <table class="wh-list request-list w-full text-sm">
+                <thead class="sticky z-20 bg-slate-100 text-slate-600" style="top: var(--freeze-top, 14rem)">
                         <tr class="text-xs font-semibold uppercase tracking-wide">
                             <th class="text-left font-semibold px-3 py-1.5 whitespace-nowrap">ໄອດີ (MR)</th>
                             <th class="text-left font-semibold px-3 py-1.5">ຜູ້ເບີກ</th>
@@ -91,7 +102,6 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
         </div>
 
         {{-- Mobile --}}

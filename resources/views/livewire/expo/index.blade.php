@@ -41,13 +41,15 @@
             </div>
         </div>
 
-        @include('partials._status-chips', ['chips' => $chips, 'current' => $statusFilter, 'trailing' => number_format($records->total()).' records'])
-
-        {{-- date-based metrics the status chips don't cover (kept from the old KPI band) --}}
-        <div class="-mt-0.5 mb-2 flex flex-wrap items-center gap-1.5">
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-1 text-sm">📅 ກຳລັງຈະໄປ <span class="font-semibold tabular-nums">{{ number_format($kpi[1]['value']) }}</span></span>
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white text-gray-600 px-2.5 py-1 text-sm">📆 ໄປແລ້ວ <span class="font-semibold tabular-nums">{{ number_format($kpi[2]['value']) }}</span></span>
-        </div>
+        @include('partials._status-chips', [
+            'chips' => $chips,
+            'current' => $statusFilter,
+            'pills' => [
+                ['label' => '📅 ກຳລັງຈະໄປ', 'value' => $kpi[1]['value']],
+                ['label' => '📆 ໄປແລ້ວ', 'value' => $kpi[2]['value']],
+            ],
+            'trailing' => number_format($records->total()).' records',
+        ])
         </div>{{-- /frozen header group --}}
 
         @if (session('ok'))<div class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 mb-2">{{ session('ok') }}</div>@endif

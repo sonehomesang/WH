@@ -56,13 +56,15 @@
             </div>
         </div>
 
-        @include('partials._status-chips', ['chips' => $chips, 'current' => $statusFilter, 'trailing' => number_format($materials->total()).' '.(app()->getLocale() === 'en' ? 'items' : 'ລາຍການ')])
-
-        {{-- reference counts the status chips don't cover (kept from the old KPI band) --}}
-        <div class="-mt-0.5 mb-2 flex flex-wrap items-center gap-1.5">
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white text-gray-600 px-2.5 py-1 text-sm">🏢 suppliers <span class="font-semibold tabular-nums">{{ number_format($kpi[3]['value']) }}</span></span>
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white text-gray-600 px-2.5 py-1 text-sm">🗂️ {{ app()->getLocale() === 'en' ? 'categories' : 'ປະເພດ' }} <span class="font-semibold tabular-nums">{{ number_format($kpi[4]['value']) }}</span></span>
-        </div>
+        @include('partials._status-chips', [
+            'chips' => $chips,
+            'current' => $statusFilter,
+            'pills' => [
+                ['label' => '🏢 suppliers', 'value' => $kpi[3]['value']],
+                ['label' => '🗂️ '.(app()->getLocale() === 'en' ? 'categories' : 'ປະເພດ'), 'value' => $kpi[4]['value']],
+            ],
+            'trailing' => number_format($materials->total()).' '.(app()->getLocale() === 'en' ? 'items' : 'ລາຍການ'),
+        ])
         </div>{{-- /frozen header group --}}
 
         @if (session('ok'))<div class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 mb-2">{{ session('ok') }}</div>@endif

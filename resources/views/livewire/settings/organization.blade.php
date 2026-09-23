@@ -48,7 +48,7 @@
                                 <span class="flex items-center gap-0.5 pr-1">
                                     <span class="text-xs text-gray-400 mr-1">{{ $unit->departments_count }}</span>
                                     @canany(['units.activate', 'units.deactivate'])
-                                        <button wire:click="toggleUnit({{ $unit->id }})" class="p-1 {{ $unit->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $unit->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>
+                                        <button wire:click="toggleUnit({{ $unit->id }})" wire:confirm="{{ $unit->is_active ? 'ປິດໃຊ້ ໜ່ວຍງານ ນີ້?' : 'ເປີດໃຊ້ ໜ່ວຍງານ ນີ້?' }}" class="p-1 {{ $unit->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $unit->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>
                                     @endcanany
                                     @can('units.edit')<button wire:click="editUnit({{ $unit->id }})" class="text-gray-400 hover:text-gray-700 p-1" aria-label="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgEdit }}" /></svg></button>@endcan
                                     @can('units.delete')<button wire:click="openDelete('unit', {{ $unit->id }})" class="text-gray-400 hover:text-red-600 p-1" aria-label="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgTrash }}" /></svg></button>@endcan
@@ -88,7 +88,7 @@
                                 <span class="flex items-center gap-1">
                                     <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ $d->is_active ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-gray-100 text-gray-500 ring-1 ring-gray-200' }}">{{ $d->is_active ? 'active' : 'inactive' }}</span>
                                     @canany(['departments.activate', 'departments.deactivate'])
-                                        <button wire:click="toggleDepartment({{ $d->id }})" class="p-1 {{ $d->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $d->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>
+                                        <button wire:click="toggleDepartment({{ $d->id }})" wire:confirm="{{ $d->is_active ? 'ປິດໃຊ້ ພະແນກ ນີ້?' : 'ເປີດໃຊ້ ພະແນກ ນີ້?' }}" class="p-1 {{ $d->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $d->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>
                                     @endcanany
                                     @can('departments.edit')<button wire:click="editDepartment({{ $d->id }})" class="text-gray-400 hover:text-gray-700 p-1" aria-label="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgEdit }}" /></svg></button>@endcan
                                     @can('departments.delete')<button wire:click="openDelete('department', {{ $d->id }})" class="text-gray-400 hover:text-red-600 p-1" aria-label="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgTrash }}" /></svg></button>@endcan
@@ -145,7 +145,15 @@
                     <label class="flex items-center gap-2 text-sm text-gray-700">
                         <input type="checkbox" wire:model="is_active" class="rounded border-gray-300 text-sky-600 focus:ring-sky-500" /> Active
                     </label>
-                    @unless ($editingId)<p class="text-xs text-gray-400">slug ຈະສ້າງອັດຕະໂນມັດຈາກຊື່</p>@endunless
+                    @if ($editingId)
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">ເຫດຜົນ ການ ປ່ຽນແປງ <span class="text-red-500">*</span></label>
+                            <textarea wire:model="changeReason" rows="2" placeholder="ເປັນຫຍັງຈຶ່ງແກ້ໄຂ…" class="w-full rounded-md border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-sm"></textarea>
+                            @error('changeReason')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    @else
+                        <p class="text-xs text-gray-400">slug ຈະສ້າງອັດຕະໂນມັດຈາກຊື່</p>
+                    @endif
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-3 bg-gray-50/70 border-t border-gray-100 shrink-0">
                     <button wire:click="$set('showModal', false)" class="text-sm text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2 min-h-[40px] hover:bg-gray-50">ຍົກເລີກ</button>

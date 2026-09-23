@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Settings;
 
+use App\Livewire\Concerns\LogsAuditHistory;
 use App\Livewire\Concerns\MultiSoftDeletesWithReason;
 use App\Models\Building;
 use App\Models\BuildingType;
@@ -18,7 +19,7 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class Facilities extends Component
 {
-    use MultiSoftDeletesWithReason;
+    use LogsAuditHistory, MultiSoftDeletesWithReason;
 
     public ?int $selectedLocationId = null;
 
@@ -55,6 +56,8 @@ class Facilities extends Component
     public string $description = '';
 
     public bool $is_active = true;
+
+    public string $changeReason = '';   // required reason when EDITING (→ audit comment + admin notify)
 
     public function mount(): void
     {
@@ -175,7 +178,14 @@ class Facilities extends Component
             $rules['parentId'] = ['required', 'exists:buildings,id'];
             $rules['function'] = ['nullable', 'string', 'max:256'];
         }
-        $this->validate($rules, [], ['name' => 'ຊື່', 'parentId' => 'parent']);
+        if ($this->editingId) {
+            $rules['changeReason'] = ['required', 'string', 'min:3', 'max:500'];
+        }
+        $this->validate(
+            $rules,
+            ['changeReason.required' => 'ກະລຸນາ ໃສ່ ເຫດຜົນ ການ ປ່ຽນແປງ.', 'changeReason.min' => 'ເຫດຜົນ ຢ່າງ ໜ້ອຍ 3 ຕົວ.'],
+            ['name' => 'ຊື່', 'parentId' => 'parent']
+        );
 
         $uid = auth()->id();
         $base = [
@@ -189,11 +199,13 @@ class Facilities extends Component
         if ($this->type === 'location') {
             $base['address'] = $this->address ?: null;
             if ($this->editingId) {
-                Location::findOrFail($this->editingId)->update($base);
+                $model = Location::findOrFail($this->editingId);
+                $model->update($base);
             } else {
                 $base['slug'] = $this->uniqueSlug($this->name, 'locations');
                 $base['created_by'] = $uid;
-                $this->selectedLocationId = Location::create($base)->id;
+                $model = Location::create($base);
+                $this->selectedLocationId = $model->id;
                 $this->selectedBuildingId = null;
             }
         } elseif ($this->type === 'building') {
@@ -201,24 +213,34 @@ class Facilities extends Component
             $base['code'] = $this->code ?: null;
             $base['building_type_id'] = $this->buildingTypeId;
             if ($this->editingId) {
-                Building::findOrFail($this->editingId)->update($base);
+                $model = Building::findOrFail($this->editingId);
+                $model->update($base);
             } else {
                 $base['slug'] = $this->uniqueSlug($this->name, 'buildings');
                 $base['created_by'] = $uid;
+                $model = Building::create($base);
                 $this->selectedLocationId = $this->parentId;
-                $this->selectedBuildingId = Building::create($base)->id;
+                $this->selectedBuildingId = $model->id;
             }
         } else {
             $base['building_id'] = $this->parentId;
             $base['function'] = $this->function ?: null;
             if ($this->editingId) {
-                Room::findOrFail($this->editingId)->update($base);
+                $model = Room::findOrFail($this->editingId);
+                $model->update($base);
             } else {
                 $base['slug'] = $this->uniqueSlug($this->name, 'rooms');
                 $base['created_by'] = $uid;
+                $model = Room::create($base);
                 $this->selectedBuildingId = $this->parentId;
-                Room::create($base);
             }
+        }
+
+        if ($this->editingId) {
+            $this->logAudit($this->type, $model, 'update', $this->changeReason);
+            $this->notifyAdmins(ucfirst($this->type), $model->name, 'update', $this->changeReason, route('settings.facilities'));
+        } else {
+            $this->logAudit($this->type, $model, 'create');
         }
 
         $this->showModal = false;
@@ -230,6 +252,11 @@ class Facilities extends Component
         $m = Location::findOrFail($id);
         abort_unless(auth()->user()->can('locations.'.($m->is_active ? 'deactivate' : 'activate')), 403);
         $m->update(['is_active' => ! $m->is_active, 'updated_by' => auth()->id()]);
+        $action = $m->is_active ? 'activate' : 'deactivate';
+        $this->logAudit('location', $m, $action);
+        if ($action === 'deactivate') {
+            $this->notifyAdmins('Location', $m->name, 'deactivate', null, route('settings.facilities'));
+        }
     }
 
     public function toggleBuilding(int $id): void
@@ -237,6 +264,11 @@ class Facilities extends Component
         $m = Building::findOrFail($id);
         abort_unless(auth()->user()->can('buildings.'.($m->is_active ? 'deactivate' : 'activate')), 403);
         $m->update(['is_active' => ! $m->is_active, 'updated_by' => auth()->id()]);
+        $action = $m->is_active ? 'activate' : 'deactivate';
+        $this->logAudit('building', $m, $action);
+        if ($action === 'deactivate') {
+            $this->notifyAdmins('Building', $m->name, 'deactivate', null, route('settings.facilities'));
+        }
     }
 
     public function toggleRoom(int $id): void
@@ -244,6 +276,11 @@ class Facilities extends Component
         $m = Room::findOrFail($id);
         abort_unless(auth()->user()->can('rooms.'.($m->is_active ? 'deactivate' : 'activate')), 403);
         $m->update(['is_active' => ! $m->is_active, 'updated_by' => auth()->id()]);
+        $action = $m->is_active ? 'activate' : 'deactivate';
+        $this->logAudit('room', $m, $action);
+        if ($action === 'deactivate') {
+            $this->notifyAdmins('Room', $m->name, 'deactivate', null, route('settings.facilities'));
+        }
     }
 
     // ── delete-with-reason + Deleted Log (trait MultiSoftDeletesWithReason) ──
@@ -268,6 +305,9 @@ class Facilities extends Component
 
     protected function afterDelete(string $type, Model $record): void
     {
+        $this->logAudit($type, $record, 'delete', $record->deleted_reason);
+        $this->notifyAdmins(ucfirst($type), $record->name, 'delete', $record->deleted_reason, route('settings.facilities'));
+
         if ($type === 'location' && $this->selectedLocationId === $record->id) {
             $this->selectedLocationId = Location::orderBy('name')->value('id');
             $this->selectedBuildingId = $this->selectedLocationId
@@ -277,6 +317,12 @@ class Facilities extends Component
         if ($type === 'building' && $this->selectedBuildingId === $record->id) {
             $this->selectedBuildingId = Building::where('location_id', $this->selectedLocationId)->orderBy('name')->value('id');
         }
+    }
+
+    protected function afterRestore(string $type, Model $record): void
+    {
+        $this->logAudit($type, $record, 'restore');
+        $this->notifyAdmins(ucfirst($type), $record->name, 'restore', null, route('settings.facilities'));
     }
 
     // ── Building-types manager ────────────────────────────────
@@ -341,6 +387,7 @@ class Facilities extends Component
     {
         $this->type = $type;
         $this->editingId = null;
+        $this->changeReason = '';
         $this->parentId = null;
         $this->name = '';
         $this->name_en = '';

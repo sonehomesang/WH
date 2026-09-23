@@ -40,7 +40,7 @@
                             @else
                                 <button wire:click="selectLocation({{ $loc->id }})" class="flex-1 text-left px-3 py-2 min-h-[40px] {{ $selectedLocationId === $loc->id ? 'text-sky-700 font-medium' : 'text-gray-700' }} {{ $loc->is_active ? '' : 'opacity-50' }}">{{ $loc->name }}@unless ($loc->is_active)<span class="text-xs text-gray-400"> (off)</span>@endunless</button>
                                 <span class="flex items-center gap-0.5 pr-1"><span class="text-xs text-gray-400 mr-0.5">{{ $loc->buildings_count }}</span>
-                                    @canany(['locations.activate', 'locations.deactivate'])<button wire:click="toggleLocation({{ $loc->id }})" class="p-1 {{ $loc->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $loc->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
+                                    @canany(['locations.activate', 'locations.deactivate'])<button wire:click="toggleLocation({{ $loc->id }})" wire:confirm="{{ $loc->is_active ? 'ປິດໃຊ້ ບ່ອນຕັ້ງ ນີ້?' : 'ເປີດໃຊ້ ບ່ອນຕັ້ງ ນີ້?' }}" class="p-1 {{ $loc->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $loc->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
                                     @can('locations.edit')<button wire:click="editLocation({{ $loc->id }})" class="text-gray-400 hover:text-gray-700 p-1" aria-label="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgEdit }}" /></svg></button>@endcan
                                     @can('locations.delete')<button wire:click="openDelete('location', {{ $loc->id }})" class="text-gray-400 hover:text-red-600 p-1" aria-label="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgTrash }}" /></svg></button>@endcan
                                 </span>
@@ -75,7 +75,7 @@
                             @else
                                 <button wire:click="selectBuilding({{ $b->id }})" class="flex-1 text-left px-3 py-2 min-h-[40px] {{ $selectedBuildingId === $b->id ? 'text-sky-700 font-medium' : 'text-gray-700' }} {{ $b->is_active ? '' : 'opacity-50' }}">{{ $b->name }} <span class="text-xs text-gray-400">@if($b->code)· {{ $b->code }} @endif· {{ $b->buildingType?->name ?? '—' }}</span></button>
                                 <span class="flex items-center gap-0.5 pr-1"><span class="text-xs text-gray-400 mr-0.5">{{ $b->rooms_count }}</span>
-                                    @canany(['buildings.activate', 'buildings.deactivate'])<button wire:click="toggleBuilding({{ $b->id }})" class="p-1 {{ $b->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $b->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
+                                    @canany(['buildings.activate', 'buildings.deactivate'])<button wire:click="toggleBuilding({{ $b->id }})" wire:confirm="{{ $b->is_active ? 'ປິດໃຊ້ ອາຄານ ນີ້?' : 'ເປີດໃຊ້ ອາຄານ ນີ້?' }}" class="p-1 {{ $b->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $b->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
                                     @can('buildings.edit')<button wire:click="editBuilding({{ $b->id }})" class="text-gray-400 hover:text-gray-700 p-1" aria-label="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgEdit }}" /></svg></button>@endcan
                                     @can('buildings.delete')<button wire:click="openDelete('building', {{ $b->id }})" class="text-gray-400 hover:text-red-600 p-1" aria-label="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgTrash }}" /></svg></button>@endcan
                                 </span>
@@ -109,7 +109,7 @@
                             @else
                                 <span class="text-gray-700 {{ $r->is_active ? '' : 'opacity-50' }}">{{ $r->name }} @if($r->function)<span class="text-xs text-gray-400">· {{ $r->function }}</span>@endif</span>
                                 <span class="flex items-center gap-0.5">
-                                    @canany(['rooms.activate', 'rooms.deactivate'])<button wire:click="toggleRoom({{ $r->id }})" class="p-1 {{ $r->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $r->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
+                                    @canany(['rooms.activate', 'rooms.deactivate'])<button wire:click="toggleRoom({{ $r->id }})" wire:confirm="{{ $r->is_active ? 'ປິດໃຊ້ ຫ້ອງ ນີ້?' : 'ເປີດໃຊ້ ຫ້ອງ ນີ້?' }}" class="p-1 {{ $r->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $r->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
                                     @can('rooms.edit')<button wire:click="editRoom({{ $r->id }})" class="text-gray-400 hover:text-gray-700 p-1" aria-label="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgEdit }}" /></svg></button>@endcan
                                     @can('rooms.delete')<button wire:click="openDelete('room', {{ $r->id }})" class="text-gray-400 hover:text-red-600 p-1" aria-label="Delete"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgTrash }}" /></svg></button>@endcan
                                 </span>
@@ -200,6 +200,13 @@
                 <label class="flex items-center gap-2 text-sm text-gray-700">
                     <input type="checkbox" wire:model="is_active" class="rounded border-gray-300 text-sky-600 focus:ring-sky-500" /> Active
                 </label>
+                @if ($editingId)
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">ເຫດຜົນ ການ ປ່ຽນແປງ <span class="text-red-500">*</span></label>
+                        <textarea wire:model="changeReason" rows="2" placeholder="ເປັນຫຍັງຈຶ່ງແກ້ໄຂ…" class="w-full rounded-md border-gray-300 text-sm"></textarea>
+                        @error('changeReason')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                    </div>
+                @endif
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-3 bg-gray-50/70 border-t border-gray-100 shrink-0">
                     <button wire:click="$set('showModal', false)" class="text-sm text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2 min-h-[40px] hover:bg-gray-50">ຍົກເລີກ</button>

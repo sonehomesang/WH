@@ -92,7 +92,7 @@
             </table>
         </div>
 
-        <div class="md:hidden space-y-2">
+        <div class="md:hidden wh-cards space-y-2">
             @forelse ($records as $r)
                 @php [$lbl, $cls] = $statusMeta($r->status); $tag = $showDeleted ? 'div' : 'a'; @endphp
                 <{{ $tag }} @if (! $showDeleted) href="{{ route('expo.show', $r) }}" wire:navigate @endif wire:key="mexp-{{ $r->id }}" class="block bg-white border border-gray-100 rounded-lg p-3">

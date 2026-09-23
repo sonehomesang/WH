@@ -129,7 +129,7 @@
         </div>
 
         {{-- Mobile cards --}}
-        <div class="md:hidden space-y-2">
+        <div class="md:hidden wh-cards space-y-2">
             @forelse ($materials as $m)
                 @php $img = $m->images->first(); @endphp
                 <div wire:key="mmat-{{ $m->id }}" class="bg-white border border-gray-100 rounded-lg p-3">

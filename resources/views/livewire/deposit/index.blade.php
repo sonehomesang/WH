@@ -155,7 +155,7 @@
         </div>
 
         {{-- Mobile cards --}}
-        <div class="md:hidden space-y-2.5">
+        <div class="md:hidden wh-cards space-y-2">
             @forelse ($records as $r)
                 @php [$lbl, $cls] = $statusMeta($r->status); $first = $r->items->first(); $ph = $first?->photos->first(); $tag = $showDeleted ? 'div' : 'a'; @endphp
                 <{{ $tag }} @if (! $showDeleted) href="{{ route('deposit.show', $r) }}" wire:navigate @endif wire:key="mdp-{{ $r->id }}" class="block bg-white border border-gray-200 rounded-xl shadow-sm p-3.5 {{ $locked($r->status) ? 'opacity-60 bg-gray-50/70' : '' }}">

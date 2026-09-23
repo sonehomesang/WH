@@ -105,7 +105,7 @@
         </div>
 
         {{-- Mobile --}}
-        <div class="md:hidden space-y-2.5">
+        <div class="md:hidden wh-cards space-y-2">
             @forelse ($records as $r)
                 @php [$lbl, $cls] = $statusMeta($r->status); $tag = $showDeleted ? 'div' : 'a'; @endphp
                 <{{ $tag }} @if (! $showDeleted) href="{{ route('request.show', $r) }}" wire:navigate @endif wire:key="mmr-{{ $r->id }}" class="block bg-white border border-gray-200 rounded-xl shadow-sm p-3.5">

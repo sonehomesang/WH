@@ -159,7 +159,7 @@
             </div>
 
             {{-- Mobile cards --}}
-            <div class="md:hidden space-y-2">
+            <div class="md:hidden wh-cards space-y-2">
                 @forelse ($items as $e)
                     <div wire:key="m-{{ $e->id }}" class="bg-white border border-gray-100 rounded-lg p-3">
                         <div class="flex items-start justify-between gap-2">

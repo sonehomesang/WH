@@ -137,7 +137,7 @@
         </div>
 
         {{-- Mobile cards --}}
-        <div class="md:hidden space-y-2.5">
+        <div class="md:hidden wh-cards space-y-2">
             @forelse ($records as $r)
                 @php [$lbl, $cls] = $statusMeta($r->display_status); $first = $r->items->first(); $ph = $first?->photos->first() ?? $first?->inventoryItem?->primaryPhoto; $tag = $showDeleted ? 'div' : 'a'; @endphp
                 <{{ $tag }} @if (! $showDeleted) href="{{ route('borrow.show', $r) }}" wire:navigate @endif wire:key="mbr-{{ $r->id }}" class="block bg-white border border-gray-200 rounded-xl shadow-sm p-3.5">

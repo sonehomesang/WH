@@ -13,7 +13,16 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <style>[x-cloak]{display:none!important}</style>
+        <style>
+            [x-cloak]{display:none!important}
+            /* Uniform list-page cell padding across every page and device (overrides
+               per-cell px-*/py-* so desktop rows are the same size everywhere). */
+            .wh-list thead th,.wh-list tbody td{padding-left:.75rem;padding-right:.75rem}
+            .wh-list thead th{padding-top:.625rem;padding-bottom:.625rem}
+            .wh-list tbody td{padding-top:.5rem;padding-bottom:.5rem}
+            /* Uniform mobile-card padding (the md:hidden card lists carry .wh-cards). */
+            .wh-cards>*{padding:.75rem}
+        </style>
 
         @include('partials._pwa-head')
     </head>

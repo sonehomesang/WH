@@ -6,12 +6,24 @@
 @endphp
 
 <div class="pb-6">
+    {{-- box-shadow (not border-bottom) so the sticky column-header divider stays
+         glued to the header under border-collapse — a real border is "owned" by
+         the first body row and scrolls away. --}}
+    <style>.expo-list thead th { box-shadow: inset 0 -2px 0 #cbd5e1; }</style>
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
-        {{-- live KPIs (page identity is already in the app top bar) --}}
-        @include('partials._kpi-band', ['tiles' => $kpi])
-
-        {{-- frozen header group: toolbar + chips freeze together --}}
-        <div class="sticky top-16 z-30 bg-gray-100">
+        {{-- frozen header group: toolbar + chips freeze; publish its bottom edge
+             as --freeze-top so the table header sticks just under it --}}
+        <div class="sticky top-16 z-30 bg-gray-100 pt-3 pb-2" x-data
+             x-init="const root = document.documentElement;
+                     const set = () => root.style.setProperty('--freeze-top', (64 + $el.offsetHeight) + 'px');
+                     set(); new ResizeObserver(set).observe($el);">
+        {{-- total Expo count → teleported up into the app header top bar --}}
+        <template x-teleport="#page-header-slot">
+            <span class="hidden lg:inline-flex items-baseline gap-1.5 ml-2 px-2.5 py-1 rounded-lg bg-white/70 border border-white/70 shadow-sm">
+                <span class="text-xl font-bold tabular-nums leading-none text-gray-800">{{ number_format($kpi[0]['value']) }}</span>
+                <span class="text-xs text-gray-500 whitespace-nowrap">Expo ທັງໝົດ</span>
+            </span>
+        </template>
         {{-- toolbar --}}
         <div class="flex flex-col gap-2 py-3 lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:flex-nowrap">
             <div class="flex flex-wrap items-center gap-2 min-w-0">
@@ -30,13 +42,19 @@
         </div>
 
         @include('partials._status-chips', ['chips' => $chips, 'current' => $statusFilter, 'trailing' => number_format($records->total()).' records'])
+
+        {{-- date-based metrics the status chips don't cover (kept from the old KPI band) --}}
+        <div class="-mt-0.5 mb-2 flex flex-wrap items-center gap-1.5">
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-1 text-sm">📅 ກຳລັງຈະໄປ <span class="font-semibold tabular-nums">{{ number_format($kpi[1]['value']) }}</span></span>
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white text-gray-600 px-2.5 py-1 text-sm">📆 ໄປແລ້ວ <span class="font-semibold tabular-nums">{{ number_format($kpi[2]['value']) }}</span></span>
+        </div>
         </div>{{-- /frozen header group --}}
 
         @if (session('ok'))<div class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 mb-2">{{ session('ok') }}</div>@endif
 
-        <div class="hidden md:block bg-white border border-gray-100 rounded-lg overflow-x-auto">
-            <table class="wh-list w-full text-sm">
-                <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+        <div class="hidden md:block bg-white border border-gray-100 rounded-lg">
+            <table class="wh-list expo-list w-full text-sm">
+                <thead class="sticky z-20 bg-slate-100 text-slate-600" style="top: var(--freeze-top, 14rem)">
                     <tr class="text-xs font-semibold uppercase tracking-wide">
                         <th class="text-left font-semibold px-3 py-1.5 whitespace-nowrap">ໄອດີ <span class="text-gray-400">(EXP)</span></th>
                         <th class="text-left font-semibold px-3 py-1.5 w-full">ຊື່ງານ</th>

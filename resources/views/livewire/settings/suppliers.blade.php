@@ -52,7 +52,7 @@
                                     <button wire:click="restore({{ $s->id }})" class="text-xs text-emerald-700 border border-emerald-200 rounded px-2 py-1 hover:bg-emerald-50">↩ ກູ້ຄືນ</button>
                                 @else
                                     <a href="{{ route('settings.suppliers.show', $s->id) }}" wire:navigate class="p-1 hover:text-sky-700 inline-block" title="Contracts / VAT"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></a>
-                                    @canany(['supplier.activate', 'supplier.deactivate'])<button wire:click="toggle({{ $s->id }})" class="p-1 {{ $s->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $s->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
+                                    @canany(['supplier.activate', 'supplier.deactivate'])<button wire:click="toggle({{ $s->id }})" wire:confirm="ຢືນຢັນ ປ່ຽນ ສະຖານະ ໃຊ້ງານ (ເປີດ/ປິດ) ຂອງ ຜູ້ສະໜອງ ນີ້?" class="p-1 {{ $s->is_active ? 'text-green-600 hover:text-gray-400' : 'text-gray-300 hover:text-green-600' }}" title="{{ $s->is_active ? 'Disable' : 'Enable' }}"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgPower }}" /></svg></button>@endcanany
                                     @can('supplier.edit')<button wire:click="editItem({{ $s->id }})" class="p-1 hover:text-gray-800" aria-label="Edit"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgEdit }}" /></svg></button>@endcan
                                     @can('supplier.delete')<button wire:click="openDelete({{ $s->id }})" class="p-1 hover:text-red-600" aria-label="Delete"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgTrash }}" /></svg></button>@endcan
                                 @endif
@@ -82,7 +82,7 @@
                     @else
                         <div class="flex gap-2 mt-2">
                             <a href="{{ route('settings.suppliers.show', $s->id) }}" wire:navigate class="text-xs border rounded px-2 py-1 min-h-[36px] inline-flex items-center">Contracts</a>
-                            @canany(['supplier.activate', 'supplier.deactivate'])<button wire:click="toggle({{ $s->id }})" class="text-xs border rounded px-2 py-1 min-h-[36px]">{{ $s->is_active ? 'Disable' : 'Enable' }}</button>@endcanany
+                            @canany(['supplier.activate', 'supplier.deactivate'])<button wire:click="toggle({{ $s->id }})" wire:confirm="ຢືນຢັນ ປ່ຽນ ສະຖານະ ໃຊ້ງານ (ເປີດ/ປິດ) ຂອງ ຜູ້ສະໜອງ ນີ້?" class="text-xs border rounded px-2 py-1 min-h-[36px]">{{ $s->is_active ? 'Disable' : 'Enable' }}</button>@endcanany
                             @can('supplier.edit')<button wire:click="editItem({{ $s->id }})" class="text-xs border rounded px-2 py-1 min-h-[36px]">Edit</button>@endcan
                             @can('supplier.delete')<button wire:click="openDelete({{ $s->id }})" class="text-xs border rounded px-2 py-1 min-h-[36px]">Delete</button>@endcan
                         </div>
@@ -135,6 +135,14 @@
                     <div class="md:col-span-2"><label class="block text-sm text-gray-600 mb-1">ເງື່ອນໄຂຊຳລະ (payment terms)</label><input type="text" wire:model="payment_terms" placeholder="Net 30, COD…" class="w-full rounded-md border-gray-300 text-sm" /></div>
                     <div class="md:col-span-2"><label class="block text-sm text-gray-600 mb-1">ໝາຍເຫດ</label><textarea wire:model="notes" rows="2" class="w-full rounded-md border-gray-300 text-sm"></textarea></div>
                     <label class="flex items-center gap-2 text-sm text-gray-700 md:col-span-2"><input type="checkbox" wire:model="is_active" class="rounded border-gray-300 text-sky-600 focus:ring-sky-500" /> Active</label>
+
+                    @if ($editingId)
+                        <div class="md:col-span-2 border-t border-gray-100 pt-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ເຫດຜົນ ການ ປ່ຽນແປງ <span class="text-red-500">*</span></label>
+                            <textarea wire:model="changeReason" rows="2" class="w-full rounded-md border-gray-300 text-sm focus:border-sky-500 focus:ring-sky-500" placeholder="ເປັນຫຍັງຈຶ່ງແກ້? (ຈະຖືກເກັບໃນ Audit log ແລະ ແຈ້ງ admin)"></textarea>
+                            @error('changeReason')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    @endif
                 </div>
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-3 bg-gray-50/70 border-t border-gray-100 shrink-0">

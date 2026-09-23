@@ -4,6 +4,9 @@ namespace App\Livewire\Settings;
 
 use App\Livewire\Concerns\SoftDeletesWithReason;
 use App\Models\Supplier;
+use App\Models\SupplierHistory;
+use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,6 +25,8 @@ class Suppliers extends Component
     public bool $showModal = false;
 
     public ?int $editingId = null;
+
+    public string $changeReason = '';   // required reason when EDITING (→ audit comment + admin notify)
 
     public string $name = '';
 
@@ -66,6 +71,7 @@ class Suppliers extends Component
     {
         $m = Supplier::findOrFail($id);
         $this->editingId = $m->id;
+        $this->changeReason = '';
         $this->name = $m->name;
         $this->name_en = $m->name_en ?? '';
         $this->contact_person = $m->contact_person ?? '';
@@ -108,7 +114,14 @@ class Suppliers extends Component
         if ($vatChanged) {
             $rules['vat_reason'] = ['required', 'string', 'max:500'];
         }
-        $data = $this->validate($rules, [], ['name' => 'ຊື່', 'vat_reason' => 'ເຫດຜົນ', 'vat_rate' => 'VAT']);
+        if ($this->editingId) {
+            $rules['changeReason'] = ['required', 'string', 'min:3', 'max:500'];
+        }
+        $data = $this->validate(
+            $rules,
+            ['changeReason.required' => 'ກະລຸນາ ໃສ່ ເຫດຜົນ ການ ປ່ຽນແປງ.', 'changeReason.min' => 'ເຫດຜົນ ຢ່າງ ໜ້ອຍ 3 ຕົວ.'],
+            ['name' => 'ຊື່', 'vat_reason' => 'ເຫດຜົນ', 'vat_rate' => 'VAT']
+        );
 
         $uid = auth()->id();
         $payload = [
@@ -144,7 +157,14 @@ class Suppliers extends Component
         } else {
             $payload['slug'] = $this->uniqueSlug($data['name']);
             $payload['created_by'] = $uid;
-            Supplier::create($payload);
+            $supplier = Supplier::create($payload);
+        }
+
+        if ($this->editingId) {
+            $this->logAudit($supplier, 'update', $this->changeReason);
+            $this->notifyAdmins($supplier, 'update', $this->changeReason);
+        } else {
+            $this->logAudit($supplier, 'create');
         }
 
         $this->showModal = false;
@@ -156,6 +176,57 @@ class Suppliers extends Component
         $m = Supplier::findOrFail($id);
         abort_unless(auth()->user()->can('supplier.'.($m->is_active ? 'deactivate' : 'activate')), 403);
         $m->update(['is_active' => ! $m->is_active, 'updated_by' => auth()->id()]);
+        $action = $m->is_active ? 'activate' : 'deactivate';
+        $this->logAudit($m, $action);
+        if ($action === 'deactivate') {
+            $this->notifyAdmins($m, 'deactivate');
+        }
+    }
+
+    // ── audit history (append-only, → Settings › Audit) + admin notifications ──
+    protected function logAudit(Supplier $item, string $action, ?string $comment = null): void
+    {
+        $actor = auth()->user();
+        SupplierHistory::create([
+            'record_id' => $item->id,
+            'action' => $action,
+            'status' => $item->is_active ? 'active' : 'inactive',
+            'user_id' => $actor?->id,
+            'user_name' => $actor?->display_name ?: $actor?->email,
+            'role' => $actor?->roles->first()?->name,
+            'comment' => $comment,
+            'created_at' => now(),
+        ]);
+    }
+
+    protected function afterDeleted(Model $record): void
+    {
+        $this->logAudit($record, 'delete', $record->deleted_reason);
+        $this->notifyAdmins($record, 'delete', $record->deleted_reason);
+    }
+
+    protected function afterRestored(Model $record): void
+    {
+        $this->logAudit($record, 'restore');
+        $this->notifyAdmins($record, 'restore');
+    }
+
+    /** Alert other admins (never the actor) so multi-level management can see who changed what. */
+    protected function notifyAdmins(Supplier $item, string $action, ?string $reason = null): void
+    {
+        $actor = auth()->user();
+        $adminIds = User::query()->where('status', 'active')->where('id', '!=', $actor?->id)
+            ->where(fn ($q) => $q
+                ->whereHas('roles', fn ($r) => $r->whereIn('name', ['admin', 'super_admin']))
+                ->orWhere('is_super_admin', true))
+            ->pluck('id')->all();
+        if (empty($adminIds)) {
+            return;
+        }
+        $verb = ['update' => 'ແກ້ໄຂ', 'deactivate' => 'ປິດໃຊ້', 'delete' => 'ລຶບ', 'restore' => 'ກູ້ຄືນ'][$action] ?? $action;
+        $who = $actor?->display_name ?: $actor?->email;
+        $msg = $who.' · '.$item->name.($reason ? ' · ເຫດຜົນ: '.$reason : '');
+        app(NotificationService::class)->notifyMany($adminIds, 'info', "Supplier: {$verb} {$item->name}", $msg, route('settings.suppliers'));
     }
 
     // ── ລຶບ-ດ້ວຍ-ເຫດຜົນ + Deleted Log (trait SoftDeletesWithReason) ──
@@ -182,6 +253,7 @@ class Suppliers extends Component
     protected function resetForm(): void
     {
         $this->editingId = null;
+        $this->changeReason = '';
         $this->name = '';
         $this->name_en = '';
         $this->contact_person = '';

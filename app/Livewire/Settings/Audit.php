@@ -31,6 +31,7 @@ class Audit extends Component
         'oga' => ['oga_history', 'outwards_goods_advices', 'oga_number'],
         'user' => ['user_history', 'users', 'username'],   // account actions: create/activate/lock…
         'inventory' => ['inventory_history', 'inventory_items', 'slug'],   // item actions: create/update/(de)activate/delete/restore
+        'supplier' => ['supplier_history', 'suppliers', 'name'],   // supplier actions
     ];
 
     public function mount(): void

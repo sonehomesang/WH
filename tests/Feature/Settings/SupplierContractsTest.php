@@ -109,7 +109,7 @@ test('changing supplier VAT requires a reason and logs the change', function () 
     $c = Livewire::test(Suppliers::class)->call('editItem', $s->id)->set('vat_rate', 7);
     $c->call('save')->assertHasErrors(['vat_reason']);
 
-    $c->set('vat_reason', 'ສັນຍາໃໝ່ 2026')->call('save')->assertHasNoErrors();
+    $c->set('vat_reason', 'ສັນຍາໃໝ່ 2026')->set('changeReason', 'ປັບ VAT')->call('save')->assertHasNoErrors();
 
     expect($s->fresh()->vat_rate)->toEqual(7.0);
     expect(SupplierVatChange::where('supplier_id', $s->id)->where('new_rate', 7)->exists())->toBeTrue();

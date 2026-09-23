@@ -19,6 +19,10 @@
 @endphp
 
 <div class="pb-6">
+    {{-- box-shadow (not border-bottom) so the sticky column-header divider stays
+         glued to the header under border-collapse — a real border is "owned" by
+         the first body row and scrolls away. --}}
+    <style>.inv-list thead th { box-shadow: inset 0 -2px 0 #cbd5e1; }</style>
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8"
          x-data="{ colsOpen: false, cols: $persist({ materialNo: true, brand: false, category: false, qty: true, stock: true, location: true, status: true }).as('wh_inv_cols_v2') }">
         @php
@@ -97,8 +101,8 @@
 
         {{-- Desktop table --}}
         <div class="hidden md:block bg-white border border-gray-100 rounded-lg">
-            <table class="wh-list w-full text-sm">
-                <thead class="sticky z-20 bg-slate-100 text-slate-600 border-b-2 border-slate-300 shadow-sm" style="top: var(--freeze-top, 14rem)">
+            <table class="wh-list inv-list w-full text-sm">
+                <thead class="sticky z-20 bg-slate-100 text-slate-600" style="top: var(--freeze-top, 14rem)">
                     <tr class="text-xs font-semibold uppercase tracking-wide">
                         <th x-show="cols.materialNo" x-cloak class="text-left font-semibold px-4 py-2 whitespace-nowrap">Material No.</th>
                         <th class="text-left font-semibold px-4 py-2 w-full">Item</th>

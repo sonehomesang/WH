@@ -1,4 +1,8 @@
 <div class="pb-6">
+    {{-- box-shadow (not border-bottom) so the sticky column-header divider stays
+         glued to the header under border-collapse — a real border is "owned" by
+         the first body row and scrolls away. --}}
+    <style>.ai-list thead th { box-shadow: inset 0 -2px 0 #cbd5e1; }</style>
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
         @if (session('ok'))
@@ -15,7 +19,10 @@
         @if ($tab === 'records')
             {{-- live KPIs (page identity is already in the app top bar) --}}
             @include('partials._kpi-band', ['tiles' => $kpi])
-            <div class="flex flex-wrap items-center gap-2 justify-between">
+            <div class="sticky top-16 z-30 bg-gray-100 pt-3 pb-2 flex flex-wrap items-center gap-2 justify-between" x-data
+                 x-init="const root = document.documentElement;
+                         const set = () => root.style.setProperty('--freeze-top', (64 + $el.offsetHeight) + 'px');
+                         set(); new ResizeObserver(set).observe($el);">
                 <div class="text-sm text-gray-500">@if ($showDeleted) 🗑️ Deleted Log @else ລາຍການ ໃບ ກວດ ທີ່ ບັນທຶກ ແລ້ວ @endif</div>
                 <div class="flex items-center gap-2">
                     <select wire:model.live="perPage" class="shrink-0 rounded-md border-gray-300 text-sm min-h-[40px]" title="ຈຳນວນ ແຖວ ຕໍ່ ໜ້າ">
@@ -32,9 +39,9 @@
                 </div>
             </div>
 
-            <div class="bg-white border border-gray-100 rounded-lg overflow-x-auto">
-                <table class="wh-list w-full text-sm">
-                    <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
+            <div class="bg-white border border-gray-100 rounded-lg">
+                <table class="wh-list ai-list w-full text-sm">
+                    <thead class="sticky z-20 bg-slate-100 text-slate-600" style="top: var(--freeze-top, 14rem)">
                         <tr class="text-xs font-semibold uppercase tracking-wide">
                             <th class="text-left font-medium px-3 py-2">ເລກ</th>
                             <th class="text-left font-medium px-3 py-2">ສະຖານທີ່</th>

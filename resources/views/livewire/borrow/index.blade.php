@@ -12,31 +12,25 @@
 @endphp
 
 <div class="pb-6">
+    {{-- The column-header divider is drawn with box-shadow, not border: a real
+         bottom border on a position:sticky <thead> is "owned" by the first body
+         row under border-collapse and scrolls away with it. box-shadow stays
+         glued to the sticky header. --}}
+    <style>.borrow-list thead th { box-shadow: inset 0 -2px 0 #cbd5e1; }</style>
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
-        {{-- live KPIs (page identity is already in the app top bar — no duplicate title) --}}
-        <div class="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden mb-3">
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-px bg-gray-100">
-                @php
-                    $kpiTiles = [
-                        ['label' => '📄 ໃບ ຢືມ ທັງໝົດ', 'value' => $kpi['total'], 'hint' => 'records', 'tone' => 'text-gray-800'],
-                        ['label' => '🔄 ກຳລັງ ຢືມ ຢູ່', 'value' => $kpi['active'], 'hint' => 'active', 'tone' => 'text-gray-800'],
-                        ['label' => '⚠️ ເກີນ ກຳນົດ', 'value' => $kpi['overdue'], 'hint' => 'overdue', 'tone' => 'text-rose-600'],
-                        ['label' => '⏰ ໃກ້ ຮອດ ກຳນົດ', 'value' => $kpi['due_soon'], 'hint' => 'ຄືນ ໃນ ≤3 ວັນ', 'tone' => 'text-amber-600'],
-                        ['label' => '✅ ສົ່ງ ຄືນ ແລ້ວ', 'value' => $kpi['returned'], 'hint' => 'returned', 'tone' => 'text-gray-800'],
-                    ];
-                @endphp
-                @foreach ($kpiTiles as $t)
-                    <div class="bg-white px-4 py-4">
-                        <p class="text-sm text-gray-500 truncate">{{ $t['label'] }}</p>
-                        <p class="text-3xl font-bold tabular-nums leading-tight mt-1 {{ $t['tone'] }}">{{ number_format($t['value']) }}</p>
-                        <p class="text-xs text-gray-500 truncate mt-0.5">{{ $t['hint'] }}</p>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        {{-- frozen header group: toolbar + chips freeze together --}}
-        <div class="sticky top-16 z-30 bg-gray-100/95 backdrop-blur">
+        {{-- frozen header group: toolbar + chips freeze; publish its bottom edge
+             as --freeze-top so the table header sticks just under it --}}
+        <div class="sticky top-16 z-30 bg-gray-100 pt-3 pb-2" x-data
+             x-init="const root = document.documentElement;
+                     const set = () => root.style.setProperty('--freeze-top', (64 + $el.offsetHeight) + 'px');
+                     set(); new ResizeObserver(set).observe($el);">
+        {{-- total borrow count → teleported up into the app header top bar --}}
+        <template x-teleport="#page-header-slot">
+            <span class="hidden lg:inline-flex items-baseline gap-1.5 ml-2 px-2.5 py-1 rounded-lg bg-white/70 border border-white/70 shadow-sm">
+                <span class="text-xl font-bold tabular-nums leading-none text-gray-800">{{ number_format($kpi['total']) }}</span>
+                <span class="text-xs text-gray-500 whitespace-nowrap">ໃບຢືມ ທັງໝົດ</span>
+            </span>
+        </template>
             <div class="flex flex-col gap-2 py-3 sm:py-2 sm:min-h-[52px] sm:flex-row sm:items-center sm:gap-3">
                 {{-- left: search + filters (search flexes; the rest hold their width) --}}
                 <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:flex-1 sm:min-w-0">
@@ -70,25 +64,33 @@
             </div>
 
             @include('partials._status-chips', ['chips' => $chips, 'current' => $statusFilter, 'trailing' => number_format($records->total()).' records'])
+
+            {{-- due-soon early warning (≤3 days) — the one metric the status chips don't cover --}}
+            @if ($kpi['due_soon'] > 0)
+                <div class="-mt-0.5 mb-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-1 text-sm">
+                        ⏰ ໃກ້ຮອດກຳນົດ <span class="font-semibold tabular-nums">{{ number_format($kpi['due_soon']) }}</span> <span class="text-xs text-amber-600">ຄືນ ໃນ ≤3 ມື້</span>
+                    </span>
+                </div>
+            @endif
         </div>{{-- /frozen header group --}}
 
         @if (session('ok'))<div class="text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 mb-3">{{ session('ok') }}</div>@endif
 
-        {{-- Desktop table --}}
-        <div class="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="wh-list w-full text-sm">
-                    <thead class="bg-slate-100 text-slate-600 border-b-2 border-slate-200">
-                        <tr class="text-xs font-semibold uppercase tracking-wide">
-                            <th class="text-left font-semibold px-3 py-1.5 whitespace-nowrap">ໄອດີ (BR)</th>
-                            <th class="text-left font-semibold px-3 py-1.5 w-full">ຜູ້ຢືມ</th>
-                            <th class="text-left font-semibold px-3 py-1.5">ເຄື່ອງທີ່ຢືມ</th>
-                            <th class="text-left font-semibold px-3 py-1.5 whitespace-nowrap">ລະຫັດ</th>
-                            <th class="text-left font-semibold px-3 py-1.5 whitespace-nowrap">ວັນທີ</th>
-                            <th class="text-left font-semibold px-3 py-1.5 whitespace-nowrap">ສະຖານະ</th>
-                            <th class="text-right font-semibold px-3 py-1.5 whitespace-nowrap">ຈັດການ</th>
-                        </tr>
-                    </thead>
+        {{-- Desktop table (no overflow wrapper — it would break the sticky header) --}}
+        <div class="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm">
+            <table class="wh-list borrow-list w-full text-sm">
+                <thead class="sticky z-20 bg-slate-100 text-slate-600" style="top: var(--freeze-top, 14rem)">
+                    <tr class="text-xs font-semibold uppercase tracking-wide">
+                        <th class="text-left font-semibold px-3 py-2.5 whitespace-nowrap">ໄອດີ (BR)</th>
+                        <th class="text-left font-semibold px-3 py-2.5 w-full">ຜູ້ຢືມ</th>
+                        <th class="text-left font-semibold px-3 py-2.5">ເຄື່ອງທີ່ຢືມ</th>
+                        <th class="text-left font-semibold px-3 py-2.5 whitespace-nowrap">ລະຫັດ</th>
+                        <th class="text-left font-semibold px-3 py-2.5 whitespace-nowrap">ວັນທີ</th>
+                        <th class="text-left font-semibold px-3 py-2.5 whitespace-nowrap">ສະຖານະ</th>
+                        <th class="text-right font-semibold px-3 py-2.5 whitespace-nowrap">ຈັດການ</th>
+                    </tr>
+                </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($records as $r)
                             @php [$lbl, $cls] = $statusMeta($r->display_status); $first = $r->items->first(); $ph = $first?->photos->first() ?? $first?->inventoryItem?->primaryPhoto; $d = $r->days_left; @endphp
@@ -132,7 +134,6 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
         </div>
 
         {{-- Mobile cards --}}

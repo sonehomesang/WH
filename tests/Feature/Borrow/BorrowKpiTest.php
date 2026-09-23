@@ -30,7 +30,7 @@ beforeEach(function () {
 test('borrow KPI band counts total / active / overdue / due-soon / returned', function () {
     Livewire::test(Index::class)
         ->assertOk()
-        ->assertSee('ໃບ ຢືມ ທັງໝົດ')      // KPI band label
+        ->assertSee('ໃບຢືມ ທັງໝົດ')      // total surfaced in the app header (teleported)
         ->assertViewHas('kpi', function ($k) {
             return $k['total'] === 5
                 && $k['active'] === 3

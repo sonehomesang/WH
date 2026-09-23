@@ -28,7 +28,7 @@
         {{-- ═══ TAB 1: Register ═══ --}}
         <div x-show="tab==='register'">
             {{-- live KPIs (page identity is already in the app top bar) --}}
-            <div class="pt-3">@include('partials._kpi-band', ['tiles' => $kpi])</div>
+            <div class="pt-3 pb-2">@include('partials._kpi-band', ['tiles' => $kpi])</div>
             {{-- toolbar (frozen ໃຕ້ ແທັບ) — publishes --freeze-top (104px = 64 app-header + 40 tabs) so the register thead sticks just under it --}}
             <div class="sticky top-[6.5rem] z-20 bg-gray-100 flex flex-wrap items-center gap-2 py-2" x-data
                  x-init="const root = document.documentElement;

@@ -22,7 +22,7 @@
     <style>.disposal-list thead th { box-shadow: inset 0 -2px 0 #cbd5e1; }</style>
     <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
         {{-- live KPIs — no status chips on this page, so the KPI band stays (not duplicated) --}}
-        @include('partials._kpi-band', ['tiles' => $kpi])
+        <div class="pt-3">@include('partials._kpi-band', ['tiles' => $kpi])</div>
 
         {{-- frozen header group: toolbar freezes; publish its bottom edge as
              --freeze-top so the table header sticks just under it --}}

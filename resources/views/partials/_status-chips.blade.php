@@ -16,8 +16,5 @@
         @foreach ($pills ?? [] as $p)
             <span class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white text-gray-600 px-2.5 py-1 text-sm">{{ $p['label'] }} <span class="font-semibold tabular-nums">{{ number_format($p['value']) }}</span></span>
         @endforeach
-        @if (! empty($trailing))
-            <span class="text-sm text-gray-400 ml-1 whitespace-nowrap">· {{ $trailing }}</span>
-        @endif
     </div>
 @endif

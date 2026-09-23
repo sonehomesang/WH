@@ -1,6 +1,6 @@
 {{-- Shared KPI band for list pages (identity is in the app top bar — no duplicate title).
      $tiles: array of ['label'=>, 'value'=>, 'hint'=>?, 'tone'=>?] (up to 5). --}}
-<div class="rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden mb-3">
+<div class="rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden">
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-px bg-gray-100">
         @foreach ($tiles as $t)
             <div class="bg-white px-3 py-2">

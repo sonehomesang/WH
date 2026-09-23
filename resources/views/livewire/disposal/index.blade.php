@@ -11,6 +11,8 @@
     // ໃບ ຍັງ ດຳເນີນ ຢູ່ (ຮ່າງ/ກຳລັງ ຮັບຮອງ/ອະນຸມັດ) = ແກ້ໄຂ ໄດ້ · ສຳເລັດ ແລ້ວ (ຈຳໜ່າຍ/ຍົກເລີກ/ຕີ ກັບ) = ລັອກ
     $canEdit = fn ($r) => ! in_array($r->status, ['disposed', 'cancelled', 'rejected'])
         && (auth()->user()->can('disposal.edit') || $r->prepared_by_user_id === auth()->id() || auth()->user()->is_super_admin);
+    $svgEdit = 'm16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z';
+    $svgTrash = 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16';
 @endphp
 
 <div class="pb-6">
@@ -101,17 +103,17 @@
                                 <td class="px-3 py-1.5 align-top text-gray-600 text-xs break-words">{{ $r->prepared_by_name ?? '—' }}</td>
                                 <td class="px-3 py-1.5 align-top whitespace-nowrap text-gray-500 text-xs tabular-nums">{{ $r->created_at?->format('d/m/Y') }}</td>
                                 <td class="px-3 py-1.5 align-top whitespace-nowrap"><span class="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 {{ $badge($r->status) }}">{{ $statusLabels[$r->status] ?? $r->status }}</span></td>
-                                <td class="px-3 py-1.5 align-top text-right">
-                                    <div class="flex flex-wrap gap-1 justify-end">
+                                <td class="px-3 py-1.5 align-top text-right whitespace-nowrap text-gray-500">
                                     @if ($showDeleted)
                                         <button wire:click="restore({{ $r->id }})" class="text-xs font-medium text-emerald-700 border border-emerald-200 rounded-lg px-3 py-1.5 hover:bg-emerald-50 transition">↩ ກູ້ຄືນ</button>
-                                        @if ($r->deleted_reason)<div class="text-xs text-gray-400 mt-1 max-w-[12rem] truncate ml-auto w-full text-right" title="{{ $r->deleted_reason }}">{{ $r->deleted_reason }}</div>@endif
+                                        @if ($r->deleted_reason)<div class="text-xs text-gray-400 mt-1 max-w-[12rem] truncate ml-auto" title="{{ $r->deleted_reason }}">{{ $r->deleted_reason }}</div>@endif
                                     @else
-                                        @if ($canEdit($r))<a href="{{ route('disposal.show', [$r, 'edit' => 1]) }}" wire:navigate class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition inline-block mr-1">✏️ ແກ້ໄຂ</a>@endif
-                                        <a href="{{ route('disposal.show', $r) }}" wire:navigate class="text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition inline-block">ເບິ່ງ</a>
-                                        @if ($canManageDeleted)<button wire:click="openDelete({{ $r->id }})" class="text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5 hover:bg-rose-100 transition inline-block ml-1">🗑 ລຶບ</button>@endif
+                                        <div class="inline-flex items-center gap-0.5">
+                                            @if ($canEdit($r))<a href="{{ route('disposal.show', [$r, 'edit' => 1]) }}" wire:navigate class="p-1 hover:text-amber-700" title="ແກ້ໄຂ" aria-label="ແກ້ໄຂ"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgEdit }}" /></svg></a>@endif
+                                            <a href="{{ route('disposal.show', $r) }}" wire:navigate class="p-1 hover:text-sky-700" title="ເບິ່ງ" aria-label="ເບິ່ງ"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg></a>
+                                            @if ($canManageDeleted)<button wire:click="openDelete({{ $r->id }})" class="p-1 hover:text-rose-600" title="ລຶບ" aria-label="ລຶບ"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $svgTrash }}" /></svg></button>@endif
+                                        </div>
                                     @endif
-                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -125,7 +127,7 @@
         </div>
 
         {{-- Mobile cards --}}
-        <div class="md:hidden space-y-2.5">
+        <div class="md:hidden wh-cards space-y-2">
             @forelse ($records as $r)
                 @php $dimmed = in_array($r->status, ['approved', 'disposed'], true); $fi = $r->items->first(); $ph = $fi->photos[0] ?? null; @endphp
                 <div wire:key="dsm-{{ $r->id }}" class="bg-white border border-gray-200 rounded-xl shadow-sm p-3.5 {{ $dimmed ? 'opacity-60' : '' }}">

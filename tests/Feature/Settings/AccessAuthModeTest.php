@@ -151,6 +151,27 @@ test('without resetAll an already-provisioned domain user keeps its password', f
     expect(Hash::check('keep-me', $already->refresh()->password))->toBeTrue();
 });
 
+test('reset never touches a super_admin by role even when the is_super_admin flag is off', function () {
+    $this->actingAs(superAdmin());
+    \App\Models\Role::findOrCreate('super_admin', 'web');
+
+    $roleSuper = User::factory()->create([
+        'auth_provider' => 'domain', 'is_super_admin' => false,   // role, not flag
+        'local_password_set_at' => now()->subDay(),
+        'password' => bcrypt('super-keep'),
+    ]);
+    $roleSuper->assignRole('super_admin');
+
+    Livewire::test(Access::class)
+        ->set('resetAll', true)
+        ->set('sharedPassword', 'Rotated-Pass-9')
+        ->call('provisionShared')
+        ->assertHasNoErrors();
+
+    // untouched — a super admin is never bulk-reset
+    expect(Hash::check('super-keep', $roleSuper->refresh()->password))->toBeTrue();
+});
+
 test('in local_only mode a domain user signs in with their local password', function () {
     Setting::put('auth', ['mode' => LdapDirectory::MODE_LOCAL]);
 

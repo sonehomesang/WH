@@ -78,14 +78,26 @@ class Access extends Component
     }
 
     /**
-     * The domain accounts a provisioning action will touch. Default: only those
-     * still without a local password. In reset mode: every domain user.
+     * Domain accounts eligible for local-password provisioning. A super admin is
+     * NEVER touched — excluded by BOTH the is_super_admin flag AND the super_admin
+     * role, because some role-super-admins carry the role without the flag and must
+     * not have their password reset out from under them.
      */
-    protected function targetUsers()
+    protected function eligibleQuery()
     {
         return User::query()
             ->where('auth_provider', 'domain')
             ->where('is_super_admin', false)
+            ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'super_admin'));
+    }
+
+    /**
+     * The accounts a provisioning action will touch. Default: only those still
+     * without a local password. In reset mode: every eligible domain user.
+     */
+    protected function targetUsers()
+    {
+        return $this->eligibleQuery()
             ->when(! $this->resetAll, fn ($q) => $q->whereNull('local_password_set_at'));
     }
 
@@ -183,9 +195,8 @@ class Access extends Component
             ->where('status', 'active')
             ->get(['id', 'username', 'email', 'display_name']);
 
-        $domainTotal = User::where('auth_provider', 'domain')->where('is_super_admin', false)->count();
-        $needingLocal = User::where('auth_provider', 'domain')->where('is_super_admin', false)
-            ->whereNull('local_password_set_at')->count();
+        $domainTotal = $this->eligibleQuery()->count();
+        $needingLocal = $this->eligibleQuery()->whereNull('local_password_set_at')->count();
 
         return view('livewire.settings.access', [
             'breakGlass' => $breakGlass,

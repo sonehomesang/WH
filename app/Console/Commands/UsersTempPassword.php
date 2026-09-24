@@ -29,6 +29,8 @@ class UsersTempPassword extends Command
         // mass update → bypass cast 'hashed', ເກັບ bcrypt hash ໂດຍ ກົງ.
         $count = User::query()
             ->where('is_super_admin', false)
+            // never a super admin — exclude the role too, not only the flag
+            ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'super_admin'))
             ->when(! $this->option('all'), fn ($q) => $q->where('auth_provider', 'domain'))
             ->update([
                 'password' => bcrypt($password),

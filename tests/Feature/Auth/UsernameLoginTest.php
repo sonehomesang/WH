@@ -23,6 +23,7 @@ test('a user signs in with their username', function () {
     $u = localUser(['username' => 'somchan', 'email' => 'somchan@example.com']);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', 'somchan')
         ->set('form.password', 'Pass-9999')
         ->call('login')
@@ -36,6 +37,7 @@ test('a user with no email signs in by username', function () {
     $u = localUser(['username' => 'noemail', 'email' => null]);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', 'noemail')
         ->set('form.password', 'Pass-9999')
         ->call('login')
@@ -48,6 +50,7 @@ test('email login still works', function () {
     $u = localUser(['username' => 'x1', 'email' => 'e@example.com']);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', 'e@example.com')
         ->set('form.password', 'Pass-9999')
         ->call('login')
@@ -60,6 +63,7 @@ test('the identifier is matched case-insensitively', function () {
     $u = localUser(['username' => 'mixed', 'email' => null]);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', 'MIXED')
         ->set('form.password', 'Pass-9999')
         ->call('login')
@@ -72,10 +76,11 @@ test('a wrong password is rejected', function () {
     localUser(['username' => 'somchan', 'email' => null]);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', 'somchan')
         ->set('form.password', 'wrong')
         ->call('login')
-        ->assertHasErrors('form.email');
+        ->assertHasErrors('form.password');
 
     $this->assertGuest();
 });

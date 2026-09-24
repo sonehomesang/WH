@@ -15,6 +15,7 @@ test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
     $component = Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'password');
 
@@ -31,6 +32,7 @@ test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
     $component = Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'wrong-password');
 
@@ -49,18 +51,20 @@ test('SECURITY — login locks out after 3 wrong passwords (per email+IP)', func
     // three wrong tries are each rejected as a normal auth failure
     foreach (range(1, 3) as $i) {
         Volt::test('pages.auth.login')
+            ->set('adminMode', true)
             ->set('form.email', $user->email)
             ->set('form.password', 'wrong-password')
             ->call('login')
-            ->assertHasErrors('form.email');
+            ->assertHasErrors('form.password');
     }
 
     // the 4th attempt is throttled — even the CORRECT password is refused with a wait message
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'password')
         ->call('login')
-        ->assertHasErrors('form.email')
+        ->assertHasErrors('form.password')
         ->assertNoRedirect();
 
     $this->assertGuest();

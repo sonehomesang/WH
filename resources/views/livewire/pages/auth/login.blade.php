@@ -1,7 +1,10 @@
 <?php
 
 use App\Livewire\Forms\LoginForm;
+use App\Models\Department;
+use App\Models\User;
 use Illuminate\Support\Facades\Session;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
@@ -9,12 +12,50 @@ new #[Layout('layouts.guest')] class extends Component
 {
     public LoginForm $form;
 
+    /** Break-glass / admin: sign in with an email instead of name + department. */
+    public bool $adminMode = false;
+
+    /** Departments that actually have a selectable (named) person. */
+    #[Computed]
+    public function departments()
+    {
+        $ids = User::whereNotNull('department_id')->whereNotNull('username')->distinct()->pluck('department_id');
+
+        return Department::whereIn('id', $ids)->orderBy('name')->get(['id', 'name']);
+    }
+
+    /** People in the chosen department, for the name picker. */
+    #[Computed]
+    public function people()
+    {
+        if (! $this->form->department_id) {
+            return collect();
+        }
+
+        return User::where('department_id', $this->form->department_id)
+            ->whereNotNull('username')
+            ->orderBy('display_name')
+            ->get(['id', 'username', 'display_name']);
+    }
+
+    /** Changing department clears the previously picked name. */
+    public function updatedFormDepartmentId(): void
+    {
+        $this->form->username = '';
+    }
+
+    public function toggleAdmin(): void
+    {
+        $this->adminMode = ! $this->adminMode;
+        $this->resetErrorBag();
+    }
+
     /**
      * Handle an incoming authentication request.
      */
     public function login(): void
     {
-        $this->validate();
+        $this->form->loginBy = $this->adminMode ? 'email' : 'name';
 
         $this->form->authenticate();
 
@@ -26,7 +67,9 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <h1 class="text-lg font-semibold text-gray-800">ເຂົ້າສູ່ລະບົບ</h1>
-    <p class="text-sm text-gray-500 mt-1 mb-5">ປ້ອນ ອີເມວ ແລະ ລະຫັດຜ່ານ ຂອງ ທ່ານ</p>
+    <p class="text-sm text-gray-500 mt-1 mb-5">
+        {{ $adminMode ? 'ຜູ້ດູແລ ລະບົບ — ເຂົ້າ ດ້ວຍ ອີເມວ' : 'ເລືອກ ພະແນກ ແລະ ຊື່ ຂອງ ທ່ານ ແລ້ວ ໃສ່ ລະຫັດຜ່ານ' }}
+    </p>
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -37,18 +80,49 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
     @endif
 
+    <!-- General auth error (failed / throttled / locked) -->
+    <x-input-error :messages="$errors->get('form.password')" class="mb-3" />
+
     <form wire:submit="login" class="space-y-4">
-        <!-- Username or email -->
-        <div>
-            <label for="email" class="block text-sm font-medium text-gray-600 mb-1">{{ app()->getLocale() === 'en' ? 'Username or email' : 'ຊື່ຜູ້ໃຊ້ ຫຼື ອີເມວ' }}</label>
-            <x-text-input wire:model="form.email" id="email" class="block w-full" type="text" name="email" required autofocus autocomplete="username" placeholder="{{ app()->getLocale() === 'en' ? 'username or you@example.com' : 'username ຫຼື you@example.com' }}" />
-            <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
-        </div>
+        @if (! $adminMode)
+            <!-- Department -->
+            <div>
+                <x-input-label for="department_id" :value="'ພະແນກ'" />
+                <select wire:model.live="form.department_id" id="department_id" name="department_id"
+                        class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <option value="">— ເລືອກ ພະແນກ —</option>
+                    @foreach ($this->departments as $d)
+                        <option value="{{ $d->id }}">{{ $d->name }}</option>
+                    @endforeach
+                </select>
+                <x-input-error :messages="$errors->get('form.department_id')" class="mt-2" />
+            </div>
+
+            <!-- Name -->
+            <div>
+                <x-input-label for="username" :value="'ຊື່'" />
+                <select wire:model="form.username" id="username" name="username" @disabled(! $this->form->department_id)
+                        class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm disabled:bg-gray-100 disabled:text-gray-400">
+                    <option value="">{{ $this->form->department_id ? '— ເລືອກ ຊື່ —' : '— ເລືອກ ພະແນກ ກ່ອນ —' }}</option>
+                    @foreach ($this->people as $p)
+                        <option value="{{ $p->username }}">{{ $p->display_name }}</option>
+                    @endforeach
+                </select>
+                <x-input-error :messages="$errors->get('form.username')" class="mt-2" />
+            </div>
+        @else
+            <!-- Admin email -->
+            <div>
+                <x-input-label for="email" :value="'ອີເມວ (admin)'" />
+                <x-text-input wire:model="form.email" id="email" class="block w-full mt-1" type="text" name="email" required autofocus autocomplete="username" placeholder="you@example.com" />
+                <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
+            </div>
+        @endif
 
         <!-- Password -->
         <div>
-            <label for="password" class="block text-sm font-medium text-gray-600 mb-1">ລະຫັດຜ່ານ</label>
-            <x-password-input wire:model="form.password" id="password" name="password" required autocomplete="current-password" />
+            <x-input-label for="password" :value="'ລະຫັດຜ່ານ'" />
+            <x-password-input wire:model="form.password" id="password" name="password" required autocomplete="current-password" class="mt-1" />
             <x-input-error :messages="$errors->get('form.password')" class="mt-2" />
         </div>
 
@@ -74,6 +148,13 @@ new #[Layout('layouts.guest')] class extends Component
             <span>ເຂົ້າສູ່ລະບົບ</span>
         </button>
     </form>
+
+    <!-- Break-glass toggle -->
+    <div class="mt-4 text-center">
+        <button type="button" wire:click="toggleAdmin" class="text-xs text-gray-400 hover:text-gray-600 hover:underline">
+            {{ $adminMode ? '← ກັບ ໄປ ເຂົ້າ ດ້ວຍ ຊື່ + ພະແນກ' : 'ຜູ້ດູແລ ລະບົບ: ເຂົ້າ ດ້ວຍ ອີເມວ' }}
+        </button>
+    </div>
 
     <div class="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-400 leading-relaxed">
         ຕ້ອງການ ບັນຊີ? ບັນຊີ ສ້າງ ໂດຍ ຜູ້ດູແລ ລະບົບ (admin / AD)<br>

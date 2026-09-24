@@ -15,10 +15,11 @@ test('a locked account cannot log in even with valid credentials', function () {
     $u = User::factory()->create(['status' => 'locked', 'password' => bcrypt('password')]);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $u->email)
         ->set('form.password', 'password')
         ->call('login')
-        ->assertHasErrors('form.email');
+        ->assertHasErrors('form.password');
 
     $this->assertGuest();
 });
@@ -26,7 +27,7 @@ test('a locked account cannot log in even with valid credentials', function () {
 test('a pending account cannot log in', function () {
     $u = User::factory()->create(['status' => 'pending', 'password' => bcrypt('password')]);
 
-    Volt::test('pages.auth.login')->set('form.email', $u->email)->set('form.password', 'password')->call('login');
+    Volt::test('pages.auth.login')->set('adminMode', true)->set('form.email', $u->email)->set('form.password', 'password')->call('login');
     $this->assertGuest();
 });
 

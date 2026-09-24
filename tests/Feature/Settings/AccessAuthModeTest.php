@@ -128,6 +128,7 @@ test('in local_only mode a domain user signs in with their local password', func
     ]);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'Local-P@ss-9')
         ->call('login')

@@ -9,35 +9,44 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Livewire\Attributes\Validate;
 use Livewire\Form;
 
 class LoginForm extends Form
 {
-    // Login identifier — a username OR an email (staff without email sign in by
-    // username). Kept as `$email` so the blade binding and error keys are stable.
-    #[Validate('required|string|max:256')]
+    // How the person is signing in:
+    //   'name'  → pick Department + Name (the normal staff flow)
+    //   'email' → type an email (break-glass super admin / legacy)
+    public string $loginBy = 'name';
+
+    // name flow: the chosen department + the selected person's username.
+    public ?int $department_id = null;
+
+    public string $username = '';
+
+    // email flow (admin / break-glass): a full email OR a bare username.
     public string $email = '';
 
-    #[Validate('required|string')]
     public string $password = '';
 
-    #[Validate('boolean')]
     public bool $remember = false;
 
     /**
      * Attempt to authenticate the request's credentials.
+     *
+     * The IDENTIFIER (how we find the account) is decoupled from the AUTH METHOD
+     * (local password vs AD bind). We resolve the user by name+department (or by
+     * email for admins), then run the exact same per-mode check as before, so the
+     * Access & Auth mode switch (local_only / ad_strict / ad_fallback) is untouched.
      *
      * @throws ValidationException
      */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
+        $this->validateInput();
 
         $ldap = app(LdapDirectory::class);
-        // Resolve by email OR username (case-insensitive) — one identifier field.
-        $id = Str::lower(trim($this->email));
-        $user = User::where('email', $id)->orWhere('username', $id)->first();
+        $user = $this->resolveUser();
 
         if ($ldap->loginEnabled() && $user && $user->auth_provider === 'domain') {
             // Domain account → verify the typed password against AD by binding as
@@ -48,7 +57,7 @@ class LoginForm extends Form
                 $this->registerFailure();
 
                 throw ValidationException::withMessages([
-                    'form.email' => trans('auth.failed'),
+                    'form.password' => trans('auth.failed'),
                 ]);
             }
 
@@ -62,12 +71,12 @@ class LoginForm extends Form
 
             Auth::login($user, $this->remember);
         } elseif (! $user || ! Auth::attempt(['id' => $user->id, 'password' => $this->password], $this->remember)) {
-            // local accounts (break-glass admin, username users, domain users in
+            // local accounts (break-glass admin, name+dept users, domain users in
             // local_only mode) authenticate by their resolved id + local password
             $this->registerFailure();
 
             throw ValidationException::withMessages([
-                'form.email' => trans('auth.failed'),
+                'form.password' => trans('auth.failed'),
             ]);
         }
 
@@ -78,7 +87,7 @@ class LoginForm extends Form
             $this->registerFailure();
 
             throw ValidationException::withMessages([
-                'form.email' => $status === 'pending'
+                'form.password' => $status === 'pending'
                     ? 'ບັນຊີ ລໍ ການອະນຸມັດ — ຕິດຕໍ່ admin.'
                     : 'ບັນຊີ ຖືກລັອກ — ຕິດຕໍ່ admin.',
             ]);
@@ -86,6 +95,45 @@ class LoginForm extends Form
 
         RateLimiter::clear($this->throttleKey());
         RateLimiter::clear($this->accountKey());
+    }
+
+    /** Validate only the fields the active flow uses. */
+    protected function validateInput(): void
+    {
+        if ($this->loginBy === 'email') {
+            $this->validate([
+                'email' => 'required|string|max:256',
+                'password' => 'required|string',
+            ]);
+
+            return;
+        }
+
+        $this->validate([
+            'department_id' => 'required|integer',
+            'username' => 'required|string|max:64',
+            'password' => 'required|string',
+        ], [
+            'department_id.required' => 'ເລືອກ ພະແນກ ກ່ອນ.',
+            'username.required' => 'ເລືອກ ຊື່ ຂອງ ທ່ານ.',
+            'password.required' => 'ໃສ່ ລະຫັດຜ່ານ.',
+        ]);
+    }
+
+    /** Find the account for the active flow. */
+    protected function resolveUser(): ?User
+    {
+        if ($this->loginBy === 'email') {
+            $id = Str::lower(trim($this->email));
+
+            return User::where('email', $id)->orWhere('username', $id)->first();
+        }
+
+        // name flow — username is globally unique; the department must also match
+        // so a person only ever signs in from their own department entry.
+        return User::where('username', Str::lower(trim($this->username)))
+            ->where('department_id', $this->department_id)
+            ->first();
     }
 
     /** Bind to AD as the user, trying each known identity (UPN, sam@domain, sam). */
@@ -109,7 +157,7 @@ class LoginForm extends Form
 
     /**
      * Ensure the authentication request is not rate limited.
-     * per-(email+IP) = 3 · per-account across ALL IPs = 10 (ກັນ distributed password-spray).
+     * per-(identifier+IP) = 3 · per-account across ALL IPs = 10 (ກັນ distributed password-spray).
      */
     protected function ensureIsNotRateLimited(): void
     {
@@ -122,7 +170,7 @@ class LoginForm extends Form
             $seconds = RateLimiter::availableIn($key);
 
             throw ValidationException::withMessages([
-                'form.email' => trans('auth.throttle', [
+                'form.password' => trans('auth.throttle', [
                     'seconds' => $seconds,
                     'minutes' => ceil($seconds / 60),
                 ]),
@@ -130,15 +178,23 @@ class LoginForm extends Form
         }
     }
 
-    /** per-(email+IP) throttle key. */
-    protected function throttleKey(): string
+    /** The identifier the person signed in with, stable across both flows. */
+    protected function identifier(): string
     {
-        return Str::transliterate(Str::lower($this->email).'|'.request()->ip());
+        return $this->loginBy === 'email'
+            ? Str::lower(trim($this->email))
+            : Str::lower(trim($this->username)).'@d'.$this->department_id;
     }
 
-    /** per-account throttle key (email only, across all IPs). */
+    /** per-(identifier+IP) throttle key. */
+    protected function throttleKey(): string
+    {
+        return Str::transliterate($this->identifier().'|'.request()->ip());
+    }
+
+    /** per-account throttle key (identifier only, across all IPs). */
     protected function accountKey(): string
     {
-        return 'acct:'.Str::transliterate(Str::lower($this->email));
+        return 'acct:'.Str::transliterate($this->identifier());
     }
 }

@@ -50,6 +50,7 @@ test('a domain user signs in with the correct AD password', function () {
     $fake->valid = ['souksavanh@example.com' => 'Ad-P@ss-123'];
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'Ad-P@ss-123')
         ->call('login')
@@ -69,10 +70,11 @@ test('a domain user is rejected with the wrong AD password', function () {
     $fake->valid = ['souksavanh@example.com' => 'Ad-P@ss-123'];
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'not-the-password')
         ->call('login')
-        ->assertHasErrors('form.email');
+        ->assertHasErrors('form.password');
 
     $this->assertGuest();
 });
@@ -88,6 +90,7 @@ test('first successful AD sign-in activates a pending imported account', functio
     $fake->valid = ['newstaff@example.com' => 'Welcome@2026'];
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'Welcome@2026')
         ->call('login')
@@ -110,10 +113,11 @@ test('a locked domain user cannot enter even with the right AD password', functi
     $fake->valid = ['locked@example.com' => 'Ad-P@ss-123'];
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'Ad-P@ss-123')
         ->call('login')
-        ->assertHasErrors('form.email');
+        ->assertHasErrors('form.password');
 
     $this->assertGuest();
 });
@@ -128,6 +132,7 @@ test('the break-glass password account still signs in locally while AD login is 
     ]);
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'wh-local-pass')
         ->call('login')
@@ -148,10 +153,11 @@ test('with AD login off, the AD password is never accepted for a domain user', f
     $fake->valid = ['souksavanh@example.com' => 'Ad-P@ss-123'];
 
     Volt::test('pages.auth.login')
+        ->set('adminMode', true)
         ->set('form.email', $user->email)
         ->set('form.password', 'Ad-P@ss-123')   // valid in AD, but login-with-AD is off
         ->call('login')
-        ->assertHasErrors('form.email');
+        ->assertHasErrors('form.password');
 
     $this->assertGuest();
 });

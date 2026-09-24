@@ -115,6 +115,42 @@ test('provisionShared validates length and applies to unprovisioned domain users
         ->and($u->local_password_set_at)->not->toBeNull();
 });
 
+test('resetAll re-issues a shared temp password to an already-provisioned domain user and keeps the domain provider', function () {
+    $this->actingAs(superAdmin());
+    $already = User::factory()->create([
+        'auth_provider' => 'domain', 'is_super_admin' => false,
+        'local_password_set_at' => now()->subDay(),
+        'password' => bcrypt('old-temp-pass'),
+    ]);
+
+    Livewire::test(Access::class)
+        ->set('resetAll', true)
+        ->set('sharedPassword', 'Rotated-Pass-9')
+        ->call('provisionShared')
+        ->assertHasNoErrors();
+
+    $already->refresh();
+    expect(Hash::check('Rotated-Pass-9', $already->password))->toBeTrue()
+        ->and(Hash::check('old-temp-pass', $already->password))->toBeFalse()
+        ->and($already->auth_provider)->toBe('domain')       // AD-safe: provider never flips
+        ->and($already->must_change_password)->toBeTrue();
+});
+
+test('without resetAll an already-provisioned domain user keeps its password', function () {
+    $this->actingAs(superAdmin());
+    $already = User::factory()->create([
+        'auth_provider' => 'domain', 'is_super_admin' => false,
+        'local_password_set_at' => now()->subDay(),
+        'password' => bcrypt('keep-me'),
+    ]);
+
+    Livewire::test(Access::class)
+        ->set('sharedPassword', 'Should-Not-Apply')
+        ->call('provisionShared');
+
+    expect(Hash::check('keep-me', $already->refresh()->password))->toBeTrue();
+});
+
 test('in local_only mode a domain user signs in with their local password', function () {
     Setting::put('auth', ['mode' => LdapDirectory::MODE_LOCAL]);
 

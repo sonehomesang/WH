@@ -28,6 +28,14 @@ class Access extends Component
     /** Optional shared temp password for the "one password for everyone" path. */
     public string $sharedPassword = '';
 
+    /**
+     * Re-issue mode. Off (default): only touch domain users who still have NO local
+     * password — safe for onboarding. On: (re)set EVERY domain user, overwriting an
+     * existing temp password too, so an admin can rotate/rescue passwords from the UI
+     * without ever editing code. auth_provider stays 'domain' either way (AD-safe).
+     */
+    public bool $resetAll = false;
+
     /** Freshly generated unique temp passwords, shown ONCE for secure hand-out. */
     public array $provisioned = [];
 
@@ -69,17 +77,25 @@ class Access extends Component
         session()->flash('access_ok', '✓ ປ່ຽນ Auth Mode ແລ້ວ — ມີ ຜົນ ທັນທີ.');
     }
 
-    /** Give every domain user still without a local password a UNIQUE temp password. */
+    /**
+     * The domain accounts a provisioning action will touch. Default: only those
+     * still without a local password. In reset mode: every domain user.
+     */
+    protected function targetUsers()
+    {
+        return User::query()
+            ->where('auth_provider', 'domain')
+            ->where('is_super_admin', false)
+            ->when(! $this->resetAll, fn ($q) => $q->whereNull('local_password_set_at'));
+    }
+
+    /** Give every targeted domain user a UNIQUE temp password. */
     public function provisionUnique(): void
     {
         abort_unless(auth()->user()->is_super_admin, 403);
 
         $this->provisioned = [];
-        $targets = User::query()
-            ->where('auth_provider', 'domain')
-            ->where('is_super_admin', false)
-            ->whereNull('local_password_set_at')
-            ->get();
+        $targets = $this->targetUsers()->get();
 
         foreach ($targets as $u) {
             $temp = Str::password(10, symbols: false);   // readable for hand-out
@@ -90,7 +106,7 @@ class Access extends Component
                 'status' => $u->status === 'locked' ? 'locked' : 'active',
             ])->save();
 
-            $this->logAudit($u, 'temp_password');
+            $this->logAudit($u, 'temp_password', $this->resetAll ? 'reset' : null);
             $this->provisioned[] = [
                 'name' => $u->display_name ?: $u->email,
                 'email' => $u->email,
@@ -110,17 +126,14 @@ class Access extends Component
             ['sharedPassword.required' => 'ໃສ່ ລະຫັດ ຊົ່ວຄາວ ຮ່ວມ.', 'sharedPassword.min' => 'ຢ່າງ ໜ້ອຍ 8 ຕົວ.'],
         );
 
-        $n = User::query()
-            ->where('auth_provider', 'domain')
-            ->where('is_super_admin', false)
-            ->whereNull('local_password_set_at')
+        $n = $this->targetUsers()
             ->get()
             ->each(fn (User $u) => $u->forceFill([
                 'password' => bcrypt($this->sharedPassword),
                 'must_change_password' => true,
                 'local_password_set_at' => now(),
                 'status' => $u->status === 'locked' ? 'locked' : 'active',
-            ])->save() && $this->logAudit($u, 'temp_password'))
+            ])->save() && $this->logAudit($u, 'temp_password', $this->resetAll ? 'reset' : null))
             ->count();
 
         $this->sharedPassword = '';
@@ -178,6 +191,8 @@ class Access extends Component
             'breakGlass' => $breakGlass,
             'domainTotal' => $domainTotal,
             'needingLocal' => $needingLocal,
+            // how many a provisioning click will touch, given the reset toggle
+            'targetCount' => $this->resetAll ? $domainTotal : $needingLocal,
             'lastSync' => Setting::get('ldap_last_sync', []),
         ]);
     }

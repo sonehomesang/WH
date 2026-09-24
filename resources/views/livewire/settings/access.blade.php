@@ -97,14 +97,26 @@
             </div>
             <p class="text-xs text-gray-500">ຕັ້ງ local password ໃຫ້ domain users ເພື່ອ ໃຫ້ login ໄດ້ ຕອນ ຢູ່ Local mode. ບັງຄັບ ປ່ຽນ ຕອນ login ຄັ້ງ ທຳອິດ. (ຕັ້ງ ເປັນ ຄົນ ໄດ້ ຢູ່ ໜ້າ Users ຜ່ານ set-password link.)</p>
 
+            {{-- Re-issue toggle: overwrite existing temp passwords too (rotate / rescue). --}}
+            <label class="flex items-start gap-2 rounded-lg border px-3 py-2 cursor-pointer {{ $resetAll ? 'border-amber-300 bg-amber-50/60' : 'border-gray-200' }}">
+                <input type="checkbox" wire:model.live="resetAll" class="mt-0.5 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                <span class="text-xs">
+                    <span class="font-semibold text-gray-800">Reset — ຕັ້ງ ໃໝ່ ໃຫ້ ທຸກ ຄົນ</span>
+                    <span class="text-gray-500">· ຂຽນ ທັບ ລະຫັດ ຊົ່ວຄາວ ເກົ່າ ຂອງ domain user ທັງ ໝົດ ({{ $domainTotal }} ຄົນ). ໃຊ້ ຕອນ ຢາກ rotate / ກູ້ ລະຫັດ ທີ່ ລືມ. auth_provider ຍັງ ເປັນ domain (AD-safe).</span>
+                </span>
+            </label>
+            @if ($resetAll)
+                <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5">⚠ ໂໝດ reset ເປີດ ຢູ່ — ການ ກົດ ຈະ ຂຽນ ທັບ ລະຫັດ ຂອງ ທຸກ {{ $domainTotal }} ຄົນ (ຄົນ ທີ່ ໃຊ້ ລະຫັດ ເກົ່າ ຢູ່ ຈະ ຕ້ອງ ໃຊ້ ອັນ ໃໝ່).</p>
+            @endif
+
             <div class="grid sm:grid-cols-2 gap-4">
                 <div class="rounded-xl border border-gray-200 p-4">
                     <p class="text-sm font-semibold text-gray-800">① Unique temp passwords</p>
                     <p class="text-xs text-gray-500 mt-1 mb-3">ອອກ ລະຫັດ ຄົນ ລະ ອັນ (ປອດໄພ ສຸດ) · ສະ ແດງ ຄັ້ງ ດຽວ ໃຫ້ ກ໋ອບ ໄປ ແຈກ.</p>
                     <button type="button" wire:click="provisionUnique"
-                        wire:confirm="ອອກ ລະຫັດ ຊົ່ວຄາວ ໃຫ້ {{ $needingLocal }} domain users? ຈະ ສະ ແດງ ຄັ້ງ ດຽວ."
-                        @disabled($needingLocal === 0)
-                        class="h-9 px-4 rounded-lg bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-40">＋ ອອກ ລະຫັດ ({{ $needingLocal }})</button>
+                        wire:confirm="{{ $resetAll ? 'RESET — ຂຽນ ທັບ ລະຫັດ ໃໝ່ ໃຫ້ '.$targetCount.' domain users? ຈະ ສະ ແດງ ຄັ້ງ ດຽວ.' : 'ອອກ ລະຫັດ ຊົ່ວຄາວ ໃຫ້ '.$targetCount.' domain users? ຈະ ສະ ແດງ ຄັ້ງ ດຽວ.' }}"
+                        @disabled($targetCount === 0)
+                        class="h-9 px-4 rounded-lg text-white text-sm font-semibold disabled:opacity-40 {{ $resetAll ? 'bg-amber-600 hover:bg-amber-700' : 'bg-sky-600 hover:bg-sky-700' }}">＋ {{ $resetAll ? 'Reset' : 'ອອກ' }} ລະຫັດ ({{ $targetCount }})</button>
                 </div>
                 <div class="rounded-xl border border-gray-200 p-4">
                     <p class="text-sm font-semibold text-gray-800">② Shared temp password</p>
@@ -112,9 +124,9 @@
                     <div class="flex gap-2">
                         <input type="text" wire:model="sharedPassword" placeholder="≥ 8 ຕົວ" class="flex-1 rounded-lg border-gray-300 text-sm" />
                         <button type="button" wire:click="provisionShared"
-                            wire:confirm="ຕັ້ງ ລະຫັດ ຊົ່ວຄາວ ຮ່ວມ ໃຫ້ {{ $needingLocal }} domain users?"
-                            @disabled($needingLocal === 0)
-                            class="h-9 px-3 rounded-lg bg-white border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40">ຕັ້ງ</button>
+                            wire:confirm="{{ $resetAll ? 'RESET — ຂຽນ ທັບ ລະຫັດ ຮ່ວມ ໃໝ່ ໃຫ້ '.$targetCount.' domain users?' : 'ຕັ້ງ ລະຫັດ ຊົ່ວຄາວ ຮ່ວມ ໃຫ້ '.$targetCount.' domain users?' }}"
+                            @disabled($targetCount === 0)
+                            class="h-9 px-3 rounded-lg border text-sm font-semibold disabled:opacity-40 {{ $resetAll ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' }}">ຕັ້ງ</button>
                     </div>
                     @error('sharedPassword')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
                 </div>

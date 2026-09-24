@@ -42,6 +42,7 @@ Thumbs.db
 
 # ── Team policy: document deliverables stay LOCAL only, never on GitHub ──
 # (.md .doc .docx .html .ppt .pptx .pdf under docs/ + root deploy/import guides)
+/docs/end-notes/
 /docs/*.html
 /docs/*.pdf
 /docs/*.docx
